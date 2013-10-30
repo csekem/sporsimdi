@@ -1,0 +1,66 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{kullaniciHome.sayfaLoad()}" />
+
+	<h:head>Kullanıcı Tanımlama Ekranı</h:head>
+	
+	<h:form id="form">
+	
+		<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+
+			<h:outputLabel for="kulEmail" value="Kullanıcı Adı (eMail)"></h:outputLabel>
+			<p:inputText id="kulEmail" value="#{kullaniciHome.instance.kullanici}"></p:inputText>
+
+			<h:outputLabel for="kulSifre" value="Kullanıcı Şifresi"></h:outputLabel>
+			<p:password id="kulSifre" value="#{kullaniciHome.instance.sifre}"/>
+
+			<h:outputLabel for="kulBloke" value="Blokeli Mi?"></h:outputLabel>
+			<p:selectBooleanButton id="kulBloke" value="#{kullaniciHome.instance.blokeli}" onLabel="EVET" offLabel="HAYIR"/>
+
+			<h:outputLabel for="kisiAdi" value="Kişi Adı"></h:outputLabel>
+			<p:inputText id="kisiAdi" value="#{kullaniciHome.sahip.ad}">
+			</p:inputText>
+
+			<h:outputLabel for="kisiSoyadi" value="Kişi Soyadı"></h:outputLabel>
+			<p:inputText id="kisiSoyadi" value="#{kullaniciHome.sahip.soyad}">
+			</p:inputText>
+
+			<h:outputLabel for="kisiTC" value="TC Kimlik No"></h:outputLabel>
+			<p:inputText id="kisiTC" value="#{kullaniciHome.sahip.tcKimlikNo}">
+			</p:inputText>
+
+			<h:outputLabel for="dogumTarihi" value="Doğum Tarihi" />
+			<p:calendar id="dogumTarihi"
+						value="#{kullaniciHome.sahip.dogumTarihi}" pattern="dd/MM/yyyy"  
+						navigator="true" showOtherMonths="true" yearRange="c-75:c"/>
+
+			<h:outputLabel for="kisiIsletmeler" value="İşletmeleri" />
+			<p:pickList id="kisiIsletmeler"
+						value="#{kullaniciHome.isletmeler}" var="isl" 
+						itemLabel="#{isl.unvan}" itemValue="#{isl}"
+						converter="primeFacesPickListConverter"
+						>
+				<f:facet name="sourceCaption">Diğerleri</f:facet>  
+				<f:facet name="targetCaption">İşletmeleri</f:facet>  
+			</p:pickList>
+
+			<p:commandButton value="Vazgeç"
+							id="vazgecButton" action="#{menuService.goToLastScreen()}"/>
+			<p:commandButton value="#{kullaniciHome.managed ? 'Güncelle' : 'Kaydet'}"
+							id="kaydetButton" action="#{kullaniciHome.save()}"/>
+
+		</p:panelGrid>
+
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

@@ -1,0 +1,148 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{sahaListesi.sayfaLoad()}" />
+
+	<h:head>#{sahaListesi.tesis.adi} tesisinde bulunan Spor Sahaları:</h:head>
+	<h:form id="form">
+
+		<p:commandButton value="Yeni Saha"  action="#{sahaListesi.enableNewerItem()}" update="form" >
+		</p:commandButton>
+		
+		<p:panel id="pnlNewerItem" rendered="#{sahaListesi.newerItem}" header="Yeni Saha Tanımla">
+			<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+
+				<h:outputLabel for="sahaTipi" value="Bu Saha hangi amaçlar için kullanılıyor"></h:outputLabel>
+				<p:pickList id="sahaTipi"
+							value="#{sahaListesi.subSahaTipleri}" var="tip" 
+							itemLabel="#{tip.adi}" itemValue="#{tip}"
+							converter="primeFacesPickListConverter"
+							>
+					<f:facet name="sourceCaption">Saha Tipleri</f:facet>  
+					<f:facet name="targetCaption">Bu saha için kullanılıyor</f:facet>  
+				</p:pickList>
+				<h:outputText value="" />
+
+				<h:outputLabel for="sahaAdi" value="Saha Adı"></h:outputLabel>
+				<p:inputText id="sahaAdi" value="#{sahaListesi.instance.adi}" disabled="#{sahaListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="en" value="Eni (m)"></h:outputLabel>
+				<p:inputText id="en" value="#{sahaListesi.instance.en}" disabled="#{sahaListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="boy" value="Boyu (m)"></h:outputLabel>
+				<p:inputText id="boy" value="#{sahaListesi.instance.boy}" disabled="#{sahaListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="yuzOlcum" value="Yüz Ölçümü (m2)"></h:outputLabel>
+				<p:inputText id="yuzOlcum" value="#{sahaListesi.instance.yuzOlcumM2}" disabled="#{sahaListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="yukseklik" value="Yüksekliği (m)"></h:outputLabel>
+				<p:inputText id="yukseklik" value="#{sahaListesi.instance.yukseklik}" disabled="#{sahaListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="acikKapali" value="Saha Açık / Kapalı"></h:outputLabel>
+				<p:selectOneMenu id="acikKapali" 
+								value="#{sahaListesi.instance.acikKapali}"
+								effect="fade"
+								>
+					<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+					<f:selectItems value="#{sahaService.acikKapaliListesi}" var="acik" 
+									itemLabel="#{acik}" itemValue="#{acik}" />
+				</p:selectOneMenu>
+				<h:outputText value="" />
+
+				<p:commandButton value="Vazgeç"
+								id="btnVazgec" 
+								action="#{sahaListesi.disableNewerItem()}"
+								update=":form"/>
+				<p:commandButton value="#{sahaListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								id="btnKaydet" 
+								action="#{sahaListesi.save()}"
+								update=":form"
+								rendered="#{!sahaListesi.deletion}"/>
+				<p:commandButton value="Sil"
+								id="btnSil" 
+								action="#{sahaListesi.delete()}"
+								update=":form"
+								rendered="#{sahaListesi.deletion}"/>
+				<h:outputText value="" />
+
+		</p:panelGrid>
+		
+		</p:panel>
+
+		<p:dataTable var="saha" 
+					value="#{sahaListesi.list}"
+					id="tblSaha"
+					>
+			<f:facet name="header">
+				Sahalar
+			</f:facet>
+
+			<p:column headerText="Saha Adı">
+				<h:outputText value="#{saha.adi}" />
+			</p:column>
+			
+			<p:column headerText="Eni (m)" style="text-align:right;">
+				<h:outputText value="#{saha.en}">
+					<f:convertNumber type="number" />
+				</h:outputText>
+			</p:column>
+
+			<p:column headerText="Boyu (m)" style="text-align:right;">
+				<h:outputText value="#{saha.boy}" >
+					<f:convertNumber type="number" />
+				</h:outputText>
+			</p:column>
+
+			<p:column headerText="Yüz Ölçümü (m2)" style="text-align:right;">
+				<h:outputText value="#{saha.yuzOlcumM2}">
+					<f:convertNumber type="number" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="Yüksekliği (m)" style="text-align:right;">
+				<h:outputText value="#{saha.yukseklik}" >
+					<f:convertNumber type="number" />
+				</h:outputText>
+			</p:column>
+
+			<p:column headerText="Açık/Kapalı">
+				<h:outputText value="#{saha.acikKapali}" />
+			</p:column>
+
+			<p:column headerText="Sahanın Kullanım Tipleri">
+				<p:dataList value="#{saha.sahaTipiListesi}" var="sahaTip">
+					<h:outputText value="#{sahaTip.adi}"/>
+				</p:dataList>
+			</p:column>
+
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{sahaListesi.updateInstance(saha)}" update=":form">
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{sahaListesi.deleteInstance(saha)}" update=":form">
+				</p:commandButton>
+			</p:column>	
+
+		</p:dataTable>
+
+		<p:commandButton value="Kapat"
+						id="btnKapat" 
+						action="#{menuService.goToLastScreen()}"/>
+
+
+	</h:form>
+
+    </ui:define>
+</ui:composition>
+
+</f:view>

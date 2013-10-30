@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+	<html xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:composite="http://java.sun.com/jsf/composite"
+		xmlns:p="http://primefaces.org/ui">
+		
+
+		<!-- INTERFACE -->
+		<composite:interface>
+			<composite:attribute name="kisi" type="com.sporsimdi.model.entity.Kisi"></composite:attribute>
+		</composite:interface>
+
+		<!-- IMPLEMENTATION -->
+		<composite:implementation>
+		<h:form>
+			<f:event type="preRenderView" listener="#{adresService.setKisi(cc.attrs.kisi)}" />
+		
+			 <p:panel header="İletişim Bilgilerim">
+	    		<p:dataGrid columns="2" columnClasses="column" cellpadding="5"
+	    					value="#{adresService.adresListesi}" var="adr">
+	    			<p:panel header="#{adr.adresTipi} - ADRES">
+						<h:outputText value="#{adr.adres}, " />
+						<h:outputText value="#{adr.mahalle} Mah. "/>
+						<h:outputText value="#{adr.semt}, "/>
+						<h:outputText value="#{adr.ilce.adi} / "/>
+						<h:outputText value="#{adr.il.adi} "/>
+						<h:outputText value="( #{adr.postaKodu} )"/>
+	    			</p:panel>
+				</p:dataGrid>
+			</p:panel>
+		
+		
+				<p:panel header="TELEFON">
+					<f:event type="preRenderView" listener="#{telefonService.setKisi(cc.attrs.kisi)}" />
+		    		<p:dataList value="#{telefonService.telefonListesi}" var="tel">
+						<h:outputText value="#{tel.telefonTipi} - TELEFON : #{tel.telefon}" />
+					</p:dataList>
+				</p:panel>
+				<p:panel header="SOSYAL MEDYA">
+					<f:event type="preRenderView" listener="#{webIletisimService.setKisi(cc.attrs.kisi)}" />
+		    		<p:dataList value="#{webIletisimService.webIletisimListesi}" var="web">
+						<h:outputText value="#{web.webIletisimTipi} : #{web.webIletisim}" />
+					</p:dataList>
+				</p:panel>
+    		<p:dataGrid columns="2" columnClasses="column" cellpadding="5">
+			</p:dataGrid>
+		
+		</h:form>
+		
+		</composite:implementation>
+
+</html>

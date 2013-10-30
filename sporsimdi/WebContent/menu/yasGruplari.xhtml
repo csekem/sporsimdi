@@ -1,0 +1,101 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{yasGrubuListesi.sayfaLoad()}" />
+
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+
+	<h:form id="form">
+
+		<p:commandButton value="Yeni Yaş Grubu"  action="#{yasGrubuListesi.enableNewerItem()}" update="form" >
+		</p:commandButton>
+		
+		<p:panel id="pnlNewerItem" rendered="#{yasGrubuListesi.newerItem}" header="Yeni Yaş Grubu Tanımla">
+			<p:panelGrid columns="2">
+
+				<p:outputLabel for="yasGrubuAdi" value="Yaş Grubu Adı"/>
+				<p:inputText id="yasGrubuAdi" 
+							value="#{yasGrubuListesi.instance.adi}" 
+							disabled="#{yasGrubuListesi.deletion}"
+							required="true"
+							requiredMessage="Yaş Grubu adı giriniz!"												
+							/>
+
+				<p:outputLabel for="baslangicYas" value="Başlangıç Yılı"/>
+				<p:inputMask id="baslangicYas" 
+							value="#{yasGrubuListesi.instance.baslangicYili}" 
+							mask="9999"
+							/>
+			
+				<p:outputLabel for="bitisYas" value="Bitiş Yılı"/>
+				<p:inputMask id="bitisYas" value="#{yasGrubuListesi.instance.bitisYili}" mask="9999"/>		
+
+				<p:commandButton value="Vazgeç"
+								id="btnVazgec" 
+								action="#{yasGrubuListesi.disableNewerItem()}"
+								update=":form"
+								process="@this"
+								/>
+				<p:commandButton value="#{yasGrubuListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								id="btnKaydet" 
+								action="#{yasGrubuListesi.save()}"
+								update=":form"
+								rendered="#{!yasGrubuListesi.deletion}"/>
+				<p:commandButton value="Sil"
+								id="btnSil" 
+								action="#{yasGrubuListesi.delete()}"
+								update=":form"
+								rendered="#{yasGrubuListesi.deletion}"/>
+
+			</p:panelGrid>
+		</p:panel>
+
+		<p:dataTable var="yasGrubu" 
+					value="#{yasGrubuListesi.list}"
+					id="tblyasGrubu"
+					emptyMessage="Tanımlı bir yaş grubu bulunamadı. Yeni Yaş Grubu butonu ile ekleyebilirsiniz."
+					>
+			<f:facet name="header">
+				Yaş Grupları
+			</f:facet>
+
+			<p:column headerText="Yaş Grubu Adı">
+				<h:outputText value="#{yasGrubu.adi}" />
+			</p:column>
+			
+			<p:column headerText="Başlangıç Yılı">
+				<h:outputText value="#{yasGrubu.baslangicYili}">
+				</h:outputText>
+			</p:column>
+
+			<p:column headerText="Bitiş Yılı">
+				<h:outputText value="#{yasGrubu.bitisYili}">
+				</h:outputText>
+			</p:column>
+
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{yasGrubuListesi.updateInstance(yasGrubu)}" update=":form">
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{yasGrubuListesi.deleteInstance(yasGrubu)}" update=":form">
+				</p:commandButton>
+			</p:column>	
+
+		</p:dataTable>
+
+		<p:commandButton value="Kapat"
+						id="btnKapat" 
+						action="#{menuService.goToLastScreen()}"/>
+
+
+	</h:form>
+
+    </ui:define>
+</ui:composition>
+
+</f:view>

@@ -1,0 +1,236 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+	
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{uyeHome.sayfaLoad()}" />
+
+	<f:loadBundle basename="#{sessionObject.labelsProperties}" var="labels"/>
+
+	<h:head>#{labels.uye} Tanımlama Ekranı</h:head>
+
+	<h:form id="form">
+	
+		<p:wizard widgetVar="wiz" flowListener="#{uyeService.onFlowProcess}" onnext="" backLabel="GERİ" nextLabel="SONRAKİ">
+
+			<p:tab id="tabGenel" title="GENEL">
+				<p:panel header="Genel Bilgiler">
+					<h:messages errorClass="error"/>
+					<p:panelGrid columns="2" columnClasses="label, value" styleClass="grid">
+						<h:outputLabel for="uyeAdi" value="#{labels.uye} Adı *"></h:outputLabel>
+						<p:inputText id="uyeAdi" value="#{uyeHome.instance.ad}" 
+									required="true" requiredMessage="#{labels.uye} Adı giriniz!">
+						</p:inputText>
+		
+						<h:outputLabel for="uyeSoyadi" value="#{labels.uye} Soyadı *"></h:outputLabel>
+						<p:inputText id="uyeSoyadi" value="#{uyeHome.instance.soyad}" 
+									required="true" requiredMessage="#{labels.uye} Soyadı giriniz!">
+						</p:inputText>
+		
+						<h:outputLabel for="uyeTC" value="#{labels.uye} TC Kimlik No"></h:outputLabel>
+						<p:inputText id="uyeTC" value="#{uyeHome.instance.tcKimlikNo}"></p:inputText>
+		
+						<h:outputLabel for="dogumTarihi" value="Doğum Tarihi *" />
+						<p:calendar id="dogumTarihi"
+									value="#{uyeHome.instance.dogumTarihi}" pattern="dd/MM/yyyy"  
+									navigator="true" showOtherMonths="true" yearRange="c-75:c"
+									required="true" requiredMessage="Doğum Tarihi giriniz!"/>
+		
+						<h:outputLabel for="cinsiyet" value="Cinsiyet *" />
+						<p:selectOneMenu id="cinsiyet"
+										value="#{uyeHome.instance.cinsiyet}" effect="fade" 
+										required="true" requiredMessage="Cinsiyet giriniz!">
+							<f:selectItem itemLabel="Seçiniz" itemValue="" />
+							<f:selectItems value="#{cinsiyetService.cinsiyetListesi}"
+								var="cinsiyet" itemLabel="#{cinsiyet}"
+								itemValue="#{cinsiyet}" />
+						</p:selectOneMenu>
+						
+						<h:outputText value="Meslek" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_SALONU')}"/>
+						<p:panel rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_SALONU')}">
+							<p:selectOneMenu id="meslekTipi" value="#{uyeHome.instance.meslek}"
+											effect="fade" converter="entityConverter">
+								<f:selectItem itemLabel="Seçiniz" itemValue="0"/>
+								<f:selectItems value="#{meslekService.meslekListesi}" var="meslek" 
+											itemLabel="#{meslek.adi}" itemValue="#{meslek}" />
+							</p:selectOneMenu>
+							<p:commandLink value="Yeni Meslek"  action="#{meslekService.yonlendir(null)}" />
+						</p:panel>
+					</p:panelGrid>
+				</p:panel>
+			</p:tab>
+
+			<p:tab id="tabIletisim" title="İLETİŞİM">
+		   		<spor:iletisim id="spor" modelId="#{uyeHome.instance.id}" save="false">
+				</spor:iletisim>
+			</p:tab>
+
+			<p:tab id="tabDonem" title="#{labels.donem_upper}">
+				<p:panel header="#{labels.donem}">
+					<h:messages errorClass="error"/>
+					<p:panelGrid columns="2" columnClasses="label, value" styleClass="grid">
+						<h:outputText value="#{labels.donem}" />
+						<p:selectOneMenu id="donem" value="#{uyeHome.donem}" 
+							effect="fade" converter="entityConverter">
+							<f:selectItem itemLabel="Seçiniz" itemValue="0" />					
+							<f:selectItems value="#{isletmeService.isletmeninDonemListesi}"
+								var="donn" itemLabel="#{donn.adi}" itemValue="#{donn}" />
+							<p:ajax update="grup,baslangicTarihi,bitisTarihi" event="change" listener="#{grupService.doneminGruplari(uyeHome.donem)}" />
+							<p:ajax update=":form:tabAidat" event="change" listener="#{tarifeService.doneminTarifeSelectleri(uyeHome.donem)}" />
+						</p:selectOneMenu>
+
+						<h:outputText value="Başlangıç Tarihi"/>
+						<p:calendar id="baslangicTarihi"
+									value="#{uyeHome.donem.donemBaslangic}" pattern="dd/MM/yyyy"  locale="tr"
+									required="true" requiredMessage="Başlangıç Tarihi giriniz!"
+									disabled="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+		
+						<h:outputText value="Bitiş Tarihi"/>
+						<p:calendar id="bitisTarihi"
+									value="#{uyeHome.donem.donemBitis}" pattern="dd/MM/yyyy"  locale="tr"
+									required="true" requiredMessage="Bitiş Tarihi giriniz!"
+									disabled="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+		
+						<h:outputText value="Grup" 
+										rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+						<p:selectOneMenu id="grup" value="#{uyeHome.uyeGrup.grup}"
+										effect="fade" converter="entityConverter"
+										rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}">
+							<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+							<f:selectItems value="#{grupService.doneminGruplari(uyeHome.donem)}" var="grup"
+								itemLabel="#{grup.adi}" itemValue="#{grup}" />
+						</p:selectOneMenu>		
+<!-- 
+	                    <h:outputText value="En son bölüme geç" />  
+    	                <h:selectBooleanCheckbox value="#{uyeService.skip}" />  
+ -->
+ 					</p:panelGrid>
+				</p:panel>
+			</p:tab>
+		
+			<p:tab id="tabAidat" title="AİDAT">
+				<p:panel header="Aidat Tarifesi">
+					<h:messages errorClass="error"/>
+					<p:panelGrid columns="2" columnClasses="label, value" styleClass="grid">
+						<p:outputLabel for="customRadio" value="Tarife"> </p:outputLabel>
+					    <p:selectOneButton id="customRadio" converter="entityConverter" widgetVar="tar" value="#{uyeHome.tarife}">
+							<f:selectItems value="#{tarifeService.doneminTarifeSelectleri(uyeHome.donem)}"
+									var="tarife" itemLabel="#{tarife}" itemValue="#{tarife}" />
+							<p:ajax update="tblTahakkukDetay,:form:thkToplamTutar,:form:thkToplamIskonto" event="change" listener="#{uyeHome.tahakkukOlustur()}" />
+					    </p:selectOneButton>
+
+						<p:outputLabel for="customRadio" value="Tahakkuk Tablosu"> </p:outputLabel>
+					    <p:dataTable id="tblTahakkukDetay" value="#{uyeHome.tahakkuk.tahakkukDetayListesi}" var="detay">
+				 	   		<p:column headerText="Taksit No">  
+            					<h:outputText value="#{detay.taksitNo}">
+            						<f:convertNumber integerOnly="true"/>
+ 								</h:outputText>  	
+        					</p:column>
+					   		<p:column headerText="Taksit Tutarı">  
+            					<h:inputText value="#{detay.taksitTutari}">
+ 									<p:ajax update=":form:thkToplamTutar,:form:thkToplamIskonto" event="change" listener="#{tahakkukHome.toplamTutarOlustur()}" />
+            					</h:inputText>  
+        					</p:column>
+					   		<p:column headerText="Vade Tarihi">  
+ 								<p:calendar id="vadeTarihi"
+									value="#{detay.vadeTarihi}" pattern="dd/MM/yyyy"  
+									required="true" requiredMessage="Vade Tarihi giriniz!"/>
+        					</p:column>        					
+					    </p:dataTable>
+						
+						<h:outputLabel for="thkToplamTutar" value="Toplam Tutar"></h:outputLabel>
+						<h:outputText id="thkToplamTutar" value="#{uyeHome.tahakkuk.toplamTutar}"/>
+					    
+						<h:outputLabel for="thkToplamIskonto" value="Toplam İskonto"></h:outputLabel>
+						<h:outputText id="thkToplamIskonto" value="#{uyeHome.tahakkuk.toplamIskonto}"/>
+					    
+					</p:panelGrid>
+				</p:panel>
+			</p:tab>
+
+<!--  
+			<p:tab id="tabTahsilat" title="TAHSİLAT">
+				<p:panel header="Aidat Tahsilatı">
+					<h:messages errorClass="error"/>
+
+					<p:panel header="Tahakkuk Tablosu">
+					    <p:dataTable id="tblThsDetay" value="#{uyeHome.tahakkuk.tahakkukDetayListesi}" var="detay">
+					   		<p:column headerText="Taksit No">  
+            					<h:outputText value="#{detay.taksitNo}">
+            						<f:convertNumber integerOnly="true"/>
+ 								</h:outputText>  	
+        					</p:column>
+					   		<p:column headerText="Taksit Tutarı">  
+            					<h:outputText value="#{detay.taksitTutari}"/>
+        					</p:column>
+					   		<p:column headerText="Vade Tarihi">  
+            					<h:outputText value="#{detay.vadeTarihi}">
+            						<f:convertDateTime pattern="dd/MM/yyyy"/>
+            					</h:outputText>
+        					</p:column>        					
+					   		<p:column headerText="Tahsilatlar">
+								<p:commandButton value="#{detay.taksitNo}. Taksiti Tahsil Et"
+												action="#{tahsilatHome.tahsilatOlustur(detay)}" 
+												update=":form:pnlTahsilEt">
+								</p:commandButton>
+        					</p:column>        					
+					    </p:dataTable>
+					</p:panel>
+					<p:panel id="pnlTahsilEt" header="Tahsilat Bilgileri" collapsed="true">
+						<p:panelGrid columns="2">
+							
+							<h:outputLabel for="tahsilTutar" value="Tutar"/>  
+							<p:inputText id="tahsilTutar" value="#{tahsilatHome.instance.tahsilTutar}">
+ 								<p:ajax update=":form:tahsilKalan" event="change" listener="#{tahsilatHome.kalanTutarOlustur()}" />
+ 							</p:inputText>  	
+ 							
+							<h:outputLabel for="tahsilTarihi" value="Tarih"/>  
+							<p:calendar id="tahsilTarihi" 
+									value="#{tahsilatHome.instance.tahsilTarihi}" pattern="dd/MM/yyyy"  
+							/>
+													
+							<h:outputLabel for="tahsilOdeyen" value="Ödeyen Kişi"/>  
+							<p:inputText id="tahsilOdeyen" value="#{tahsilatHome.instance.odeyenKisi}">
+ 							</p:inputText>  	
+
+							<h:outputLabel for="tahsilKalan" value="Kalan Tutar"/>  
+							<h:outputText id="tahsilKalan" value="#{tahsilatHome.instance.iskonto}">
+ 							</h:outputText>  	
+							<p:commandButton value="Kalanı Sıfırla"
+											action="#{tahsilatHome.kalanTutarSifirla()}" 
+											update=":form:pnlTahsilEt">
+							</p:commandButton>
+ 							
+
+						</p:panelGrid>
+					</p:panel>
+				</p:panel>
+			</p:tab>
+-->
+
+			<p:tab id="tabConfirm" title="KAYDET">
+				<p:panel header="Bilgileri Kaydet">
+					<h:outputText value="Oluşturduğunuz bu bilgiler ile #{uyeHome.instance.ad}  #{uyeHome.instance.soyad} üyesini " />
+					<p:commandButton value="KAYDET" 
+									id="butKaydet"
+									action="#{uyeHome.save()}" 
+					/>
+				</p:panel>
+			</p:tab>
+
+		</p:wizard>
+
+		<p:commandButton value="Vazgeç" id="vazgecButton" action="#{menuService.goToLastScreen()}"/>
+	
+	</h:form>
+	
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

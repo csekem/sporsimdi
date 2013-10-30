@@ -1,0 +1,171 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"	
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:loadBundle basename="com.sporsimdi.resources.okul" var="labels"/>
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<h:outputText value="AİDATLAR" style="color:red"/>
+		<style type="text/css">
+			.ui-widget-content .ui-datalist-content{
+				border: none;
+				background: transparent;
+				background-image: none;
+			}
+		</style>	
+	</h:head>
+		
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+
+	<h:form id="form">
+
+ 		<p:tree value="#{aidatService.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{aidatService.selectedNode}"
+				>
+			<p:ajax event="select" update=":form:gridAidat" listener="#{aidatService.onNodeSelect}"/>	
+				<p:treeNode>
+					<h:outputText value="#{node}" />
+				</p:treeNode>
+		</p:tree>
+ 
+ 		<p:panelGrid columns="1" id="gridAidat">
+ 			<p:outputPanel>
+				<p:commandButton  
+								icon="ui-icon-arrowstop-1-w" 
+								actionListener="#{aidatService.addAllColumnsToLeft()}" 
+								update=":form:gridAidat"
+								disabled="#{aidatService.selectedTabModel.ssSchedulerBase.dateAtBegin}"
+								/>
+				<p:spacer height="0" width="10"/>
+				<p:commandButton  
+								icon="ui-icon-arrow-1-w" 
+								actionListener="#{aidatService.addColumnToLeft}" 
+								update=":form:gridAidat"
+								disabled="#{aidatService.selectedTabModel.ssSchedulerBase.dateAtBegin}"
+								/>
+				<p:spacer height="0" width="30"/>
+				<p:commandButton  
+								icon="ui-icon-arrow-1-e" 
+								actionListener="#{aidatService.addColumnToRight}" 
+								update=":form:gridAidat"
+								disabled="#{aidatService.selectedTabModel.ssSchedulerBase.dateAtEnd}"
+								/>
+				<p:spacer height="0" width="10"/>
+				<p:commandButton  
+								icon="ui-icon-arrowstop-1-e" 
+								actionListener="#{aidatService.addAllColumnsToRight()}" 
+								update=":form:gridAidat"
+								disabled="#{aidatService.selectedTabModel.ssSchedulerBase.dateAtEnd}"
+								/>
+			</p:outputPanel>
+	
+	 		<p:tabView activeIndex="0" value="#{aidatService.aidatTabList}" var="tab" id="tabAidat" orientation="top">
+	 			<p:tab title="#{tab.tabTitle}">
+	 			</p:tab>
+	 			<p:ajax event="tabChange" listener="#{aidatService.onTabChange}" update=":form:gridAidat"/> 
+	 		</p:tabView>		
+
+			<p:dataTable value="#{aidatService.values}" var="val" id="tblAidat" emptyMessage="Herhangi bir aidat kaydı bulunamadı.">
+				<p:columns var="col" value="#{aidatService.columns}" columnIndexVar="colInd">
+					<f:facet name="header">
+						<h:outputText value="#{col}" />
+						</f:facet>
+					<h:outputText value="#{val[colInd].aciklama}" rendered="#{val[colInd].aciklamaVar}"/>
+					<h:outputText value="#{val[colInd].tahsilTutar}" rendered="#{!val[colInd].aciklamaVar}"/>
+				<p:spacer height="0" width="10"/>
+				<p:commandLink value="#{val[colInd].odemeDurumu}" 
+								disabled="#{val[colInd].tahakkukDetayList.size()==0}"
+								icon="ui-icon-search" title="View"
+								action="#{aidatService.tahsilatEkranAc(val[colInd])}" 
+								id="btnTahsilat" 
+								update=":form:lbTsl,:form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+								style="color:#{val[colInd].bgColor}"/>  
+				</p:columns>
+			</p:dataTable>
+		</p:panelGrid> 
+
+		<p:dialog widgetVar="dlgTahsilat" modal="true" id="dlgTsl" header="TAHSİLAT">
+		
+			<p:panelGrid id="pnlTsl" columns="2">
+				<p:outputLabel for="lbTsl" value="Ödemeler"/>
+				<p:selectOneMenu value="#{aidatService.selectedTahakkukDetay}" 
+								id="lbTsl"
+								converter="entityConverter" 
+								>
+					<f:selectItem itemLabel="Bir Ödeme Seçiniz" itemValue="0"/>
+					<f:selectItems value="#{aidatService.aidatTahakkukDetaylari(aidatService.selectedAidat)}" var="dty" itemLabel="#{dty.label}" itemValue="#{dty.value}"/>
+					<p:ajax event="change" listener="#{aidatService.tahsilatHazirla(aidatService.selectedAidat,aidatService.selectedTahakkukDetay)}" update=":form:pnlTsl"></p:ajax>
+				</p:selectOneMenu>
+
+				<p:outputLabel for="aidThkTarih" value="Son Ödeme Tarihi"/>
+			 	<ss:tarihGoster id="aidThkTarih" value="#{aidatService.selectedTahakkukDetay.vadeTarihi}"/>
+
+				<p:outputLabel for="aidThkTutar" value="Aidat Tutarı"/>
+			 	<ss:paraGoster id="aidThkTutar" value="#{aidatService.selectedTahakkukDetay.tutar}"/>
+			 	
+				<p:outputLabel for="aidThsl" value="Tahsilatlar" rendered="#{aidatService.selectedAidat.odemeVar}"/>
+				<p:dataTable id="aidThsl" 
+							value="#{tahsilatService.tahsilatListele(aidatService.selectedTahakkukDetay)}" 
+							var="tahsilat"
+							rendered="#{aidatService.selectedAidat.odemeVar}"
+							emptyMessage="Herhangi bir tahsilat yok"
+							>
+					<p:column headerText="Tip">
+						<h:outputText value="#{tahsilat.tahsilatTipi}"/>
+					</p:column>
+					<p:column headerText="Tarih">
+						<ss:tarihGoster value="#{tahsilat.tahsilTarihi}"/>
+					</p:column>
+					<p:column headerText="Tahsilat">
+						<ss:paraGoster value="#{tahsilat.tahsilTutari}"/>
+					</p:column>
+					<p:column headerText="İndirim">
+						<ss:paraGoster value="#{tahsilat.indirimTutari}"/>
+					</p:column>
+					<p:column>
+					 	<p:commandButton value="İPTAL" action="#{aidatService.tahsilatIptalEt(tahsilat)}" 
+					 					oncomplete="dlgTahsilat.hide()" update=":form:gridAidat"
+					 					/>
+					</p:column>
+				</p:dataTable>
+			 	
+				<p:outputLabel for="aidThsTutar" value="Ödeme Tutarı" rendered="#{!aidatService.selectedAidat.odemeTam}"/>
+				<h:panelGroup rendered="#{!aidatService.selectedAidat.odemeTam}">
+				 	<p:inputText id="aidThsTutar" value="#{aidatService.tahsilTutar}"
+				 				/>
+				 	<p:commandButton value="BORCU SİL" action="#{aidatService.borcuKapat()}" 
+				 					oncomplete="dlgTahsilat.hide()" update=":form:gridAidat"
+				 					/>
+				</h:panelGroup>
+				
+			 	<p:commandButton value="KAPAT"  
+			 					oncomplete="dlgTahsilat.hide()" 
+			 					/>
+			 	<p:commandButton value="ÖDEME AL" action="#{aidatService.tahsilatYap()}" 
+			 					oncomplete="dlgTahsilat.hide()" update=":form:gridAidat"
+			 					rendered="#{!aidatService.selectedAidat.odemeTam}">
+			 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+			 	</p:commandButton>
+			 	<h:outputText value="" rendered="#{aidatService.selectedAidat.odemeTam}"/>
+			</p:panelGrid>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+
+	</h:form>
+		
+  	</ui:define>
+</ui:composition>
+
+</f:view>

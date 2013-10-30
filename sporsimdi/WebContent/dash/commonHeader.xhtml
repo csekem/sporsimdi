@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"	  
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:body>
+
+	<ui:composition>
+	<h:form id="menuForm">
+	
+		<!-- ÜST MENU -->
+		<p:dock position="top">
+			<p:menuitem id="menuAnasayfa"
+						value="ANASAYFA"
+						url="/menu/anasayfa.jsf"
+						icon="/images/ss_homepage.png"
+						>
+			</p:menuitem>
+			<p:menuitem id="menuBilgilerim"
+						value="BİLGİLERİM"
+						url="/menu/bilgilerim.jsf"
+						icon="/images/ss_info.png"
+						>
+			</p:menuitem>
+			<p:menuitem id="menuSporOkulu"
+						value="SPOR OKULU"
+						url="/menu/sporokulu/sporokulu.jsf"
+						icon="/images/ss_sporokulu.png"
+						rendered="#{menuService.sporOkuluVar}"
+						>
+			</p:menuitem>
+			<p:menuitem id="menuSporSalonu"
+						value="SPOR SALONU"
+						url="/menu/sporsalonu/sporsalonu.jsf"
+						icon="/images/ss_sporsalonu.png"
+						rendered="#{menuService.sporSalonuVar}"
+						>
+				<p:graphicImage name="/images/ss_homepage.png" ></p:graphicImage>
+			</p:menuitem>
+			<p:menuitem id="menuYönetim"
+						value="YÖNETİM EKRANLARI"
+						url="/admin/yonetim.jsf"
+						icon="/images/ss_yonetim.png" 
+						rendered="#{sessionObject.rol.rol.equals('admin')}"
+						>
+				<p:graphicImage name="/images/ss_homepage.png" ></p:graphicImage>
+			</p:menuitem>
+			<p:menuitem id="menuCikis"
+						value="ÇIKIŞ"
+						url="/menu/cikis.jsf"
+						icon="/images/ss_exit.png">
+			</p:menuitem>
+		</p:dock>
+		
+		<br />
+		<br />
+		<br />
+		<br />
+		
+		<!-- SPOR OKULU/SPOR SALONU MENU -->
+		<p:tabMenu rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU') ||
+								sessionObject.selectedIsletmeTipi.equals('SPOR_SALONU')}"
+								>
+			<p:menuitem id="menuSporOkuluBilgileri"
+						value="OKUL BİLGİLERİ"
+						url="/menu/sporokulu/sporokulu.jsf"
+						icon="/images/ss_exit.png"
+						style="background-color:purple;color:white"
+						rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"
+						>
+			</p:menuitem>			
+			<p:menuitem id="menuSporSalonuBilgileri"
+						value="SALON BİLGİLERİ"
+						url="/menu/sporsalonu/sporsalonu.jsf"
+						icon="/images/ss_exit.png"
+						style="background-color:purple;color:white"
+						rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_SALONU')}"
+						>
+			</p:menuitem>			
+			<p:menuitem id="menuOgrenciler"
+						value="ÖĞRENCİLER"
+						url="/menu/uyeler.jsf"
+						icon="/images/ss_sporokulu_uye.png"
+						style="background-color:purple;color:white"
+						rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"
+						>
+			</p:menuitem>			
+			<p:menuitem id="menuUyeler"
+						value="ÜYELER"
+						url="/menu/uyeler.jsf"
+						icon="/images/ss_sporokulu_uye.png"
+						style="background-color:purple;color:white"
+						rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_SALONU')}"
+						>
+			</p:menuitem>			
+			<p:menuitem id="menuAidatlar"
+						value="AİDATLAR"
+						url="/menu/aidatlar.jsf"
+						icon="/images/ss_sporokulu_uye.png"
+						style="background-color:purple;color:white"
+						>
+			</p:menuitem>			
+			<p:menuitem id="menuDefter"
+						value="DEFTER"
+						url="/menu/defter.jsf"
+						icon="/images/ss_sporokulu_uye.png"
+						style="background-color:purple;color:white"
+						>
+			</p:menuitem>			
+		</p:tabMenu>
+
+		<!-- SPOR OKULU İŞLEM YAPILAN -->
+		<p:panel rendered="#{menuService.manySporOkulu}">
+			<p:outputLabel for="selectOkul" 
+							value="İşlem Yapılan Okul: "/>
+			<p:selectOneMenu value="#{sessionObject.sporOkulu}" 
+							converter="entityConverter"
+							id="selectOkul" 
+							>
+				<f:selectItem itemLabel="Bir Okul Seçin" itemValue="0"/>
+				<f:selectItems value="#{menuService.sporOkuluList}" var="mainOkul"
+								itemValue="#{mainOkul}" itemLabel="#{mainOkul.unvan}"/>
+				 <p:ajax listener="#{sessionObject.okulSecildi()}"></p:ajax>
+			</p:selectOneMenu>
+		</p:panel>				
+		<p:panel rendered="#{menuService.oneSporOkulu}">
+			<p:outputLabel for="selectOneOkul" 
+							value="İşlem Yapılan Okul: "/>
+			<h:outputText value="#{menuService.sporOkuluList.get(0).unvan}" 
+							id="selectOneOkul" 
+							>
+			</h:outputText>
+		</p:panel>				
+			<!--
+						valueChangeListener="#{sessionObject.okulSecildi()}" 
+			 -->
+
+		<!-- SPOR SALONU İŞLEM YAPILAN -->
+		<p:panel rendered="#{menuService.manySporSalonu}">
+			<p:outputLabel for="selectSalon" 
+							value="İşlem Yapılan Salon: "/>
+			<p:selectOneMenu value="#{sessionObject.sporSalonu}" 
+							id="selectSalon"
+							>
+				<f:selectItem itemLabel="Bir Salon Seçin" itemValue="0"/>
+				<f:selectItems value="#{menuService.sporSalonuList}" var="mainSalon" 
+								itemValue="#{mainSalon}" itemLabel="#{mainSalon.unvan}"/>
+				<p:ajax listener="#{sessionObject.salonSecildi()}"></p:ajax>
+			</p:selectOneMenu>				
+		</p:panel>
+		<p:panel rendered="#{menuService.oneSporSalonu}">
+			<p:outputLabel for="selectOneSalon" 
+							value="İşlem Yapılan Salon: "/>
+			<h:outputText value="#{menuService.sporSalonuList.get(0).unvan}" 
+							id="selectOneSalon" 
+							>
+			</h:outputText>
+		</p:panel>				
+
+
+
+		<!-- YÖNETİM MENU -->
+		<p:tabMenu rendered="#{sessionObject.selectedIsletmeTipi.equals('YONETIM')}"
+					>
+			<p:menuitem id="menuKullanicilar"
+						value="KULLANICILAR"
+						url="/admin/kullanicilar.jsf"
+						icon="/images/ss_kullanicilar.png"
+						style="background-color:purple;color:white"
+						>
+			</p:menuitem>			
+		</p:tabMenu>
+
+		<br />
+		<br />
+	</h:form>
+	</ui:composition>
+</h:body>
+
+</html>

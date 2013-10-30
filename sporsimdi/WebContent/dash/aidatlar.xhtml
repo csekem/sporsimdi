@@ -1,0 +1,338 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"	
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:loadBundle basename="com.sporsimdi.resources.okul" var="labels"/>
+	<f:event type="preRenderView" listener="#{aidatService.sayfaLoad()}" />
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<h:outputText value="AİDATLAR" style="color:red"/>
+		<style type="text/css">
+			.ui-widget-content .ui-datalist-content{
+				border: none;
+				background: transparent;
+				background-image: none;
+			}
+		</style>	
+	</h:head>
+		
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+
+	<h:form id="form">
+
+ 		<p:tree value="#{aidatService.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{aidatService.selectedNode}"
+				>
+			<p:ajax event="select" update=":form" listener="#{aidatService.onNodeSelect}"/>	
+				<p:treeNode>
+					<h:outputText value="#{node}" />
+				</p:treeNode>
+		</p:tree>
+ 
+ <ui:remove>
+ 		<p:tabView activeIndex="1" value="#{aidatService.aidatTabList}" var="tab">
+ 			<p:tab title="#{tab.tabTitle}">
+ 			</p:tab>
+ 		</p:tabView>		
+ </ui:remove>
+ 
+  		<h:panelGrid columns="4">
+				<h:outputText value="Sorgulama Ay Başlangıcı: " />
+				<p:commandButton action="#{aidatService.filterAyBaslaCikar()}" value="Bir Önceki Ay"
+				    			update=":form:pnlAidat,:form" icon="ui-icon-triangle-1-w" />
+				<p:calendar value="#{aidatService.filterAyBasla}" readonly="true" pattern="MMMM yyyy" locale="tr" timeZone="Turkey"/>
+				<p:commandButton  actionListener="#{aidatService.filterAyBaslaEkle()}" value="Bir Sonraki Ay"
+				    			update=":form" icon="ui-icon-triangle-1-e" />    
+
+				<h:outputText value="Sorgulama Ay Bitişi: " />
+				<p:commandButton action="#{aidatService.filterAyBitisCikar()}" value="Bir Önceki Ay"
+				    			update=":form:pnlAidat,:form" icon="ui-icon-triangle-1-w" />
+				<p:calendar value="#{aidatService.filterAyBitis}" readonly="true" pattern="MMMM yyyy" locale="tr" timeZone="Turkey"/>
+				<p:commandButton  actionListener="#{aidatService.filterAyBitisEkle()}" value="Bir Sonraki Ay"
+				    			update=":form" icon="ui-icon-triangle-1-e" />    
+		</h:panelGrid>
+ 		
+		<p:panel id="pnlAidat">
+			<p:dataTable value="#{aidatService.aidatListesi}" var="aidat" rowIndexVar="rowInd" style="width:50%"
+						emptyMessage="Aidat takibi tyapılacak kayıtlı üye bulunamadı."
+			>
+				<p:columnGroup type="header">
+					<p:row>
+						<p:column headerText="Tesis"/>
+						<p:column headerText="Grup"/>
+						<p:column headerText="Üye"/>
+						<p:column headerText="Tarife"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(0)}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(1)}" rendered="#{aidatService.ayIsimleri.size()>=2}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(2)}" rendered="#{aidatService.ayIsimleri.size()>=3}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(3)}" rendered="#{aidatService.ayIsimleri.size()>=4}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(4)}" rendered="#{aidatService.ayIsimleri.size()>=5}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(5)}" rendered="#{aidatService.ayIsimleri.size()>=6}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(6)}" rendered="#{aidatService.ayIsimleri.size()>=7}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(7)}" rendered="#{aidatService.ayIsimleri.size()>=8}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(8)}" rendered="#{aidatService.ayIsimleri.size()>=9}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(9)}" rendered="#{aidatService.ayIsimleri.size()>=10}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(10)}" rendered="#{aidatService.ayIsimleri.size()>=11}"/>
+						<p:column headerText="#{aidatService.ayIsimleri.get(11)}" rendered="#{aidatService.ayIsimleri.size()>=12}"/>
+					</p:row>
+				</p:columnGroup>
+
+				<p:column>
+					<h:outputText value="#{aidatService.orgTesisListesi.get(rowInd).adi}" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{aidatService.grupListesi.get(rowInd).adi}" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{aidatService.uyeListesi.get(rowInd)}" />
+				</p:column>
+				<p:column>
+					<h:outputText value="#{aidatService.tarifeListesi.get(rowInd)}" />
+				</p:column>
+
+				<p:column>
+					<h:outputText value="#{aidat[0].tahsilTutar}" style="text-align:right;color:#{aidat[0].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[0].odemeDurumu}" 
+									disabled="#{aidat[0].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[0])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[0].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=2}">
+					<h:outputText value="#{aidat[1].tahsilTutar}" style="text-align:right;color:#{aidat[1].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[1].odemeDurumu}" 
+									disabled="#{aidat[1].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[1])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[1].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=3}">
+					<h:outputText value="#{aidat[2].tahsilTutar}" style="text-align:right;color:#{aidat[2].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[2].odemeDurumu}" 
+									disabled="#{aidat[2].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[2])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[2].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=4}">
+					<h:outputText value="#{aidat[3].tahsilTutar}" style="text-align:right;color:#{aidat[3].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[3].odemeDurumu}" 
+									disabled="#{aidat[3].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[3])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[3].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=5}">
+					<h:outputText value="#{aidat[4].tahsilTutar}" style="text-align:right;color:#{aidat[4].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[4].odemeDurumu}" 
+									disabled="#{aidat[4].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[4])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[4].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=6}">
+					<h:outputText value="#{aidat[5].tahsilTutar}" style="text-align:right;color:#{aidat[5].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[5].odemeDurumu}" 
+									disabled="#{aidat[5].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[5])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[5].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=7}">
+					<h:outputText value="#{aidat[6].tahsilTutar}" style="text-align:right;color:#{aidat[6].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[6].odemeDurumu}" 
+									disabled="#{aidat[6].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[6])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[6].bgColor}"/>  
+				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=8}">
+					<h:outputText value="#{aidat[7].tahsilTutar}" style="text-align:right;color:#{aidat[7].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[7].odemeDurumu}" 
+									disabled="#{aidat[7].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[7])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[7].bgColor}"/>  
+				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=9}">
+					<h:outputText value="#{aidat[8].tahsilTutar}" style="text-align:right;color:#{aidat[8].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[8].odemeDurumu}" 
+									disabled="#{aidat[8].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[8])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[8].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=10}">
+					<h:outputText value="#{aidat[9].tahsilTutar}" style="text-align:right;color:#{aidat[9].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[9].odemeDurumu}" 
+									disabled="#{aidat[9].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[9])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[9].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=11}">
+					<h:outputText value="#{aidat[10].tahsilTutar}" style="text-align:right;color:#{aidat[10].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[10].odemeDurumu}" 
+									disabled="#{aidat[10].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[10])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[10].bgColor}"/>  
+ 				</p:column>
+
+				<p:column rendered="#{aidatService.ayIsimleri.size()>=12}">
+					<h:outputText value="#{aidat[11].tahsilTutar}" style="text-align:right;color:#{aidat[11].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[11].odemeDurumu}" 
+									disabled="#{aidat[11].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[11])}" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[11].bgColor}"/>  
+ 				</p:column>
+
+				<p:columnGroup type="footer">
+					<p:row>
+						<p:column footerText="Toplam #{aidatService.orgTesisCount} tesiste,"/>
+						<p:column footerText="#{aidatService.grupCount} grupta,"/>
+						<p:column footerText="#{aidatService.uyeCount} üye kaydı için"/>
+						<p:column footerText="toplanan aidat tutarları:"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(0).tahsilTutar}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(1).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=2}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(2).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=3}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(3).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=4}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(4).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=5}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(5).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=6}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(6).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=7}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(7).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=8}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(8).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=9}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(9).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=10}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(10).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=11}"/>
+						<p:column footerText="#{aidatService.ayToplamListesi.get(11).tahsilTutar}" rendered="#{aidatService.ayToplamListesi.size()>=12}"/>
+					</p:row>
+				</p:columnGroup>
+				<ui:remove>
+				</ui:remove>
+
+				<ui:remove>
+				<p:columns value="#{aidatService.ayIsimleri}" var="ay" columnIndexVar="colInd" style="text-align:left">
+					<h:outputText value="#{aidat[colInd].tahsilTutar}" style="text-align:right;color:#{aidat[colInd].bgColor}"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="#{aidat[colInd].odemeDurumu}" 
+									disabled="#{aidat[colInd].tahakkukDetay == null}"
+									action="#{aidatService.tahsilatHazirla(aidat[colInd])}" 
+									id="selectButton" 
+									update=":form:pnlTsl" oncomplete="dlgTahsilat.show()" 
+									icon="ui-icon-search" title="View"
+									style="color:#{aidat[colInd].bgColor}"/>  
+					<f:facet name="footer">
+						<h:outputText value="#{aidatService.ayToplamlari[colInd].tahsilTutar}"/> 						
+					</f:facet>
+ 				</p:columns>
+				</ui:remove>
+			</p:dataTable>
+		</p:panel>
+		
+		<p:dialog widgetVar="dlgTahsilat" modal="true" id="dlg" header="TAHSİLAT">
+			<p:panelGrid id="pnlTsl" columns="2">
+				<p:outputLabel for="aidThkTarih" value="Son Ödeme Tarihi"/>
+			 	<ss:tarihGoster id="aidThkTarih" value="#{aidatService.selectedAidat.tahakkukDetay.vadeTarihi}"/>
+
+				<p:outputLabel for="aidThkTutar" value="Aidat Tutarı"/>
+			 	<ss:paraGoster id="aidThkTutar" value="#{aidatService.selectedAidat.tahakkukTutar}"/>
+			 	
+				<p:outputLabel for="aidThsl" value="Tahsilatlar" rendered="#{aidatService.selectedAidat.odemeVar}"/>
+				<p:dataTable id="aidThsl" 
+							value="#{tahsilatService.tahsilatListele(aidatService.selectedAidat.tahakkukDetay)}" 
+							var="tahsilat"
+							rendered="#{aidatService.selectedAidat.odemeVar}">
+					<p:column headerText="Tip">
+						<h:outputText value="#{tahsilat.tahsilatTipi}"/>
+					</p:column>
+					<p:column headerText="Tarih">
+						<ss:tarihGoster value="#{tahsilat.tahsilTarihi}"/>
+					</p:column>
+					<p:column headerText="Tahsilat">
+						<ss:paraGoster value="#{tahsilat.tahsilTutari}"/>
+					</p:column>
+					<p:column headerText="İndirim">
+						<ss:paraGoster value="#{tahsilat.indirimTutari}"/>
+					</p:column>
+					<p:column>
+					 	<p:commandButton value="İPTAL" action="#{aidatService.tahsilatIptalEt(tahsilat)}" 
+					 					oncomplete="dlgTahsilat.hide()" update=":form"
+					 					/>
+					</p:column>
+				</p:dataTable>
+			 	
+				<p:outputLabel for="aidThsTutar" value="Ödeme Tutarı" rendered="#{!aidatService.selectedAidat.odemeTam}"/>
+				<h:panelGroup rendered="#{!aidatService.selectedAidat.odemeTam}">
+				 	<p:inputText id="aidThsTutar" value="#{aidatService.tahsilTutar}"
+				 				/>
+				 	<p:commandButton value="BORCU SİL" action="#{aidatService.borcuKapat()}" 
+				 					oncomplete="dlgTahsilat.hide()" update=":form"
+				 					/>
+				</h:panelGroup>
+				
+			 	<p:commandButton value="KAPAT"  
+			 					oncomplete="dlgTahsilat.hide()" update=":form"
+			 					/>
+			 	<p:commandButton value="ÖDEME AL" action="#{aidatService.tahsilatYap()}" 
+			 					oncomplete="dlgTahsilat.hide()" update=":form"
+			 					rendered="#{!aidatService.selectedAidat.odemeTam}">
+			 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+			 	</p:commandButton>
+			 	<h:outputText value="" rendered="#{aidatService.selectedAidat.odemeTam}"/>
+			</p:panelGrid>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+
+	</h:form>
+		
+  	</ui:define>
+</ui:composition>
+
+</f:view>

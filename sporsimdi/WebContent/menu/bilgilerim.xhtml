@@ -1,0 +1,48 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('BILGILERIM')}" />
+
+	<h:head>KENDİ BİLGİLERİM</h:head>
+
+	<br />
+			
+	<h:form id="form">
+		
+		<p:panel header="Bilgilerim">
+			<p:panelGrid columns="2">
+				<h:outputText value="Kullanıcı Adım (emailim)"></h:outputText>
+				<h:outputText value="#{sessionObject.kullanici.kullanici}"></h:outputText>
+			
+				<h:outputText value="Adım Soyadım"></h:outputText>
+				<h:outputText value="#{sessionObject.kisi.ad} #{sessionObject.kisi.soyad}"></h:outputText>
+			
+				<h:outputText value="TC Kimlik No"></h:outputText>
+				<h:outputText value="#{sessionObject.kisi.tcKimlikNo}"></h:outputText>
+
+				<p:commandButton value="Şifre Değiştirme" action="#{kullaniciService.sifreDegistirYonlendir(sessionObject.kullanici.id)}">
+				</p:commandButton>
+				<h:outputText value="" />
+				
+			</p:panelGrid>
+		</p:panel>
+
+		<p:panel header="İletişim">
+			<spor:iletisim id="spor" modelId="#{sessionObject.kisi.id}" save="true">
+			</spor:iletisim>
+		</p:panel>
+
+		   		
+	</h:form>
+				
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

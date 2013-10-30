@@ -1,0 +1,26 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+ contentType="text/html">
+
+	<form name="loginForm" method="POST" action="j_security_check">
+		<div  style="position:relative;left:200px; top:200px;width:300px;border:1px solid #000000;">
+		
+		<table>
+			<tr>
+				<td><p>Kullanıcı Adı</p></td>
+				<td><input type="text" name="j_username"/></td>
+			</tr>
+			<tr>
+				<td><p>Şifre</p></td>
+				<td><input type="password" name="j_password"/></td>
+			</tr>
+			<tr>
+				<td><input type="submit" value="Giriş"/></td>
+				<td><input type="reset" value="Temizle"/></td>
+			</tr>
+		</table>
+  		</div>
+	</form>
+
+</f:view>

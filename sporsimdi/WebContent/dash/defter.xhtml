@@ -1,0 +1,155 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<h:head>İŞLETME DEFTERİ</h:head>
+		
+	<h:form id="form">
+
+		<h:outputLabel for="tarih" value="Tarih *" />
+		<p:calendar id="tarih"	value="#{defterService.tarih}" 
+					pattern="dd/MM/yyyy" locale="tr"
+					required="true" requiredMessage="Tarihi giriniz!"/>
+
+		<p:commandButton value="Listele" 
+							action="#{defterService.listele()}" 
+							update="form"
+							immediate="false"
+		>
+		</p:commandButton>
+		
+		<p:commandButton value="Yeni Kayıt" action="#{defterHome.sayfaLoad()}" onclick="defterGirisModal.show();">
+		</p:commandButton>
+		
+
+		<p:dataTable id="tblDefter" var="defter" value="#{defterService.defterler}"
+					widgetVar="tblUye" emptyMessage="Bu tarihte defter kaydı yok!"	
+		>
+			<p:column id="colId" 
+					headerText="No"
+			>
+				<h:outputText value="#{defter.id}"/>
+			</p:column>
+			<p:column id="colTarih" 
+					headerText="Tarih"
+			>
+				<h:outputText value="#{defter.tarih}"/>
+			</p:column>
+			<p:column id="colKullanici" 
+					headerText="Kullanici"
+			>
+				<h:outputText value="#{defter.kullanici.kullanici}" />
+			</p:column>
+			<p:column id="colKalem"
+					headerText="Kalem"
+			>
+				<h:outputText value="#{defter.kalem.adi}" />
+			</p:column>
+			
+			<p:column id="colAciklama"
+					headerText="Açıklama"
+			>
+				<h:outputText value="#{defter.aciklama}" />
+			</p:column>
+			<p:column id="colGider"
+					headerText="Gider"
+			>
+				<h:outputText value="#{defter.gider}" />
+			</p:column>
+			<p:column id="colGelir"
+					headerText="Gelir"
+			>
+				<h:outputText value="#{defter.gelir}" />
+			</p:column>
+			<p:column id="colBakiye"
+					headerText="Bakiye"
+			>
+				<h:outputText value="#{defter.bakiye}" />
+			</p:column>
+
+			<p:column id="colDuzenle"
+					headerText="Düzenle"
+			>
+				<p:commandButton value="Güncelle" action="#{defterService.yonlendir(defter)}"  >
+				</p:commandButton>
+			</p:column>
+		</p:dataTable>		
+		
+		<p:panel id="defterGiris" header="Defter Kaydı Giriş"
+				widgetVar="defterGirisModal" 
+				style="width:500px;height:600px">
+
+			<p:panelGrid columns="2">
+				<h:outputLabel for="modalTarih" value="Tarih" />
+				<p:calendar id="modalTarih"	value="#{defterHome.instance.tarih}" 
+							pattern="dd/MMMM/yyyy" locale="tr"
+							required="true" requiredMessage="Tarihi giriniz!"/>
+
+				<h:outputLabel for="modalKalem" value="Kalem" />
+				<p:selectOneMenu id="modalKalem" value="#{defterHome.instance.kalem}"
+								effect="fade">
+					<f:selectItem itemLabel="Seçiniz" itemValue="" />
+					<f:selectItems value="#{kalemService.kalemListesi}" var="kalem" 
+									itemLabel="#{kalem.adi}" itemValue="#{kalem}" />
+				</p:selectOneMenu>
+			
+				<h:outputLabel for="modalAciklama" value="Açıklama" />
+				<p:inputText id="modalAciklama" 
+							value="#{defterHome.instance.aciklama}" >
+				</p:inputText>
+
+				<h:outputText value="Gider" />
+				<h:outputText value="Gelir" />
+
+				<p:inputText id="modalGider" 
+							value="#{defterHome.instance.gider}" >
+				</p:inputText>
+
+				<p:inputText id="modalGelir" 
+							value="#{defterHome.instance.gelir}" >
+				</p:inputText>
+
+				<p:commandButton value="Vazgeç"
+								id="vazgecButton" action="defterGirisModal.hide()"/>
+				<p:commandButton value="Kaydet" 
+									action="#{defterHome.save()}" 
+				>
+				</p:commandButton>
+
+			</p:panelGrid>
+		
+		</p:panel>
+
+<p:dialog id="test" widgetVar="Testing">
+          <h:panelGrid columns="1">
+          </h:panelGrid>
+          <p:commandLink  value="ok" actionListener="#{defterService.kaydet}" />
+    </p:dialog>
+    
+		<p:dialog header="Defter Kaydı Giriş"
+				widgetVar="modal" 
+				>
+		<h:form>
+			<p:panelGrid columns="2">
+				<h:outputLabel for="modalTarih" value="Tarih" />
+				<p:commandLink ajax="true" value="Kaydet" 
+									actionListener="#{defterHome.kaydet()}" 
+				>
+				</p:commandLink>
+
+			</p:panelGrid>
+		
+		</h:form>
+		</p:dialog>
+		
+	</h:form>
+		
+  	</ui:define>
+</ui:composition>
+
+</f:view>

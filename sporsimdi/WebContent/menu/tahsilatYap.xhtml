@@ -1,0 +1,154 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+	
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:loadBundle basename="#{sessionObject.labelsProperties}" var="labels"/>
+
+	<f:event type="preRenderView" listener="#{tahsilatHome.sayfaLoad()}" />
+
+	<h:head>Tahsilat Ekranı</h:head>
+
+	<h:form id="form">
+		
+		<h:panelGrid id="grdTahakkuk" columns="2" cellpadding="2" title="Aidat Bilgisi" frame="hsides"> 
+			<h:outputText value="#{labels.uye}"/>
+			<h:outputText value="#{tahsilatHome.tahakkuk.uyeGrup.uye.adSoyad}">
+			</h:outputText>
+
+			<h:outputText value="Taksit Tarihi"/>
+			<h:outputText value="#{tahsilatHome.tahakkukDetay.vadeTarihi}">
+				<f:convertDateTime type="date" pattern="dd MMMM yyyy, EEEE" locale="tr" timeZone="Turkey"/>
+			</h:outputText>
+
+			<h:outputText value="Taksit Numarası"/>
+			<h:outputText value="#{tahsilatHome.tahakkukDetay.taksitNo}">
+				<f:convertNumber type="number"/>
+			</h:outputText>
+
+			<h:outputText value="Taksit Tutarı"/>
+			<h:outputText value="#{tahsilatHome.tahakkukDetay.taksitTutari}">
+				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+			</h:outputText>
+			
+			<h:outputText value="Kalan Tutarı"/>
+			<h:outputText value="#{tahsilatHome.instance.tahsilTutar}">
+				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+			</h:outputText>			
+		</h:panelGrid>		
+
+		<p:panel header="Tahsilatlar" id="pnlTahsilat" >
+		    <p:dataTable id="tblTahsilat" value="#{tahsilatHome.tahsilatListesi}" var="tahsilat">
+		   		<p:column headerText="Tahsil Tarihi">  
+         			<h:outputText value="#{tahsilat.tahsilTarihi}">
+						<f:convertDateTime type="date"  dateStyle="short" pattern="dd MMMM yyyy, EEEE" locale="tr" timeZone="Turkey"/>
+					</h:outputText>  	
+     			</p:column>
+		   	
+		   		<p:column headerText="Tahsilat Tutarı">  
+         			<h:outputText value="#{tahsilat.tahsilTutar}">
+	       				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+         			</h:outputText>
+     			</p:column>
+
+		   		<p:column headerText="İskonto Tutarı">  
+   					<h:outputText value="#{tahsilat.iskonto}">
+	       				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+   					</h:outputText>
+     			</p:column>        
+
+		   		<p:column headerText="Ödeme Şekli">  
+   					<h:outputText value="#{tahsilat.odemeSekli}">
+   					</h:outputText>
+     			</p:column>        
+
+		   		<p:column headerText="Ödeyen">  
+   					<h:outputText value="#{tahsilat.odeyenKisi.adSoyad}">
+   					</h:outputText>
+     			</p:column>        
+
+		   		<p:column headerText="Tahsilat Tipi">  
+   					<h:outputText value="#{tahsilat.tahsilatTipi}">
+   					</h:outputText>
+     			</p:column>        
+
+		   		<p:column headerText="İptal Et">
+					<p:commandButton value="İptal Et"
+									action="#{tahsilatHome.tahsilatIptalEt(tahsilat)}" 
+									update=":form:pnlTahsilat"
+									>
+					</p:commandButton>
+     			</p:column>        					
+		    </p:dataTable>
+
+			<h:panelGrid id="grdTahsilat" columns="3" cellpadding="2" title="Tahsilat Al" frame="hsides"
+						rendered="#{tahsilatHome.kalanVar}"> 
+
+				<h:outputText value="Tahsilat Tarihi"/>
+				<p:calendar value="#{tahsilatHome.instance.tahsilTarihi}"	
+						pattern="dd.MM.yyyy" 
+						locale="tr" timeZone="Turkey"
+						navigator="true" 
+						showButtonPanel="true"
+						showOn="button"/>
+				<h:outputText />
+
+				<h:outputText value="Taksit Tutarı"/>
+				<h:outputText value="#{tahsilatHome.tahakkukDetay.taksitTutari}">
+					<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+				</h:outputText>
+				<h:outputText />
+
+				<h:outputText value="Tahsilat Tutarı"/>
+				<p:inputText value="#{tahsilatHome.instance.tahsilTutar}">
+				</p:inputText>
+				<h:outputText />
+
+				<h:outputText value="Ödeme Nasıl Yapıldı"/>
+				<p:selectOneMenu id="odemeSekli"
+								value="#{tahsilatHome.instance.odemeSekli}" effect="fade" 
+								>
+					<f:selectItems value="#{tahsilatService.odemeSekliListesi}" var="odeme" 
+									itemLabel="#{odeme}" itemValue="#{odeme}" />
+				</p:selectOneMenu>
+				<h:outputText />
+				
+				<h:outputText value="Ödeyen Kişi"/>
+				<p:selectOneMenu value="#{tahsilatHome.instance.odeyenKisi}"
+								effect="fade" converter="entityConverter">
+					<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+					<f:selectItems value="#{kisiService.kisiListesi}"
+									var="kisi" 
+									itemLabel="#{kisi.adSoyad}"
+									itemValue="#{kisi}"/>
+				</p:selectOneMenu>
+				<p:commandButton value="Yeni Kişi"  action="#{kisiService.yonlendir(null)}" >
+				</p:commandButton>
+
+				<p:commandButton value="Kalanı Sıfırla"
+								action="#{tahsilatHome.kalanTutarSifirla()}" 
+								update=":form:tblTahsilat">
+				</p:commandButton>
+				<p:commandButton value="Tahsil Et"
+								action="#{tahsilatHome.tahsilatYap()}" 
+								update=":form:tblTahsilat">
+				</p:commandButton>
+				<h:outputText />
+
+			</h:panelGrid>
+		</p:panel>
+
+		<p:commandButton value="Vazgeç" id="vazgecButton" action="#{menuService.goToLastScreen()}"/>
+	
+	</h:form>
+	
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

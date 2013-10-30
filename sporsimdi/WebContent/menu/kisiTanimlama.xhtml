@@ -1,0 +1,75 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+	
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{kisiHome.sayfaLoad()}" />
+
+	<h:head>Kişi Tanımlama Ekranı</h:head>
+
+	<h:form id="form">
+	
+		<p:panel header="Genel Bilgiler" id="pnlKisi">
+			<p:messages id="messages" showDetail="true" autoUpdate="true" closable="true" />  
+
+			<p:panelGrid columns="2" columnClasses="label, value" styleClass="grid">
+				<h:outputLabel for="kisiAdi" value="Kişi Adı *"></h:outputLabel>
+				<p:inputText id="kisiAdi" value="#{kisiHome.instance.ad}" 
+							required="true" requiredMessage="Kişi Adı giriniz!">
+				</p:inputText>
+
+				<h:outputLabel for="kisiSoyadi" value="Kişi Soyadı *"></h:outputLabel>
+				<p:inputText id="kisiSoyadi" value="#{kisiHome.instance.soyad}" 
+							required="true" requiredMessage="Kişi Soyadı giriniz!">
+				</p:inputText>
+
+				<h:outputLabel for="kisiTC" value="TC Kimlik No"></h:outputLabel>
+				<p:inputText id="kisiTC" value="#{kisiHome.instance.tcKimlikNo}"></p:inputText>
+
+				<h:outputLabel for="dogumTarihi" value="Doğum Tarihi" />
+				<p:calendar id="dogumTarihi"
+							value="#{kisiHome.instance.dogumTarihi}" pattern="dd/MM/yyyy"  
+							navigator="true" showOtherMonths="true" yearRange="c-75:c"/>
+
+				<h:outputLabel for="cinsiyet" value="Cinsiyet" />
+				<p:selectOneMenu id="cinsiyet"
+								value="#{kisiHome.instance.cinsiyet}" effect="fade">
+					<f:selectItem itemLabel="Seçiniz" itemValue="" />
+					<f:selectItems value="#{cinsiyetService.cinsiyetListesi}" var="cinsiyet" 
+									itemLabel="#{cinsiyet}"	itemValue="#{cinsiyet}" />
+				</p:selectOneMenu>
+				
+			</p:panelGrid>
+		</p:panel>
+
+<ui:remove>
+		<p:panel header="İletişim">
+			<spor:iletisim id="spor" modelId="#{kisiHome.instance.id}" save="false">
+			</spor:iletisim>
+		</p:panel>
+</ui:remove>
+
+		<p:panel header="Bilgileri Kaydet" id="pnlButon">
+			<h:outputText value="Oluşturduğunuz bu bilgiler ile " />
+			<p:commandButton value="KAYDET" 
+							id="btnKaydet"
+							action="#{kisiHome.save()}" 
+			/>
+		</p:panel>
+
+		<p:commandButton value="Vazgeç" id="btnVazgec" 
+						action="#{menuService.goToLastScreen()}"
+						process=":form:btnVazgec"/>
+	
+	</h:form>
+	
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

@@ -1,0 +1,35 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{donemTipiHome.sayfaLoad()}" />
+
+	<f:loadBundle basename="#{sessionObject.labelsProperties}" var="labels"/>
+
+	<h:head>#{labels.donemTipi} Tanımlama Ekranı</h:head>
+	
+	<h:form id="form">
+	
+		<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+
+			<h:outputLabel for="donemTipiAdi" value="#{labels.donemTipi} Adı"></h:outputLabel>
+			<p:inputText id="donemTipiAdi" value="#{donemTipiHome.instance.adi}"></p:inputText>
+
+			<p:commandButton value="Vazgeç"
+							id="vazgecButton" action="#{menuService.goToLastScreen()}"/>
+			<p:commandButton value="#{donemTipiHome.managed ? 'Güncelle' : 'Kaydet'}"
+							id="kaydetButton" action="#{donemTipiHome.save}"/>
+
+		</p:panelGrid>
+
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

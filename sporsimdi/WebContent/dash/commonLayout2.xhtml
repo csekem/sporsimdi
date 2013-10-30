@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"   
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      >
+<f:view>
+<h:head>
+	<h:outputStylesheet name="common-style.css" library="css" />
+</h:head>
+ 
+<h:body>
+	<p:layout fullPage="true">
+		<p:layoutUnit id="north" position="north" size="75">
+			<p:menubar model="#{menuService.menuModel}"/>
+		</p:layoutUnit>
+
+        <p:layoutUnit id="south" position="south" size="60">
+        	<h:outputText value="www.sporsimdi.com" />
+        </p:layoutUnit>
+        
+        <p:layoutUnit id="east" position="east" size="250">
+        	<h:outputText value="REKLAM"/>
+        	<br />
+        	<h:outputText value="ÇIKIŞ"/>
+        </p:layoutUnit>
+
+
+        <p:layoutUnit id="center" position="center">
+			<p:layout fullPage="false">
+				<p:layoutUnit id="northin" position="north" size="60">
+					<p:selectOneButton value="#{sessionObject.sporOkulu}" rendered="#{menuService.selectedMainMenu.equals('SPOR OKULU')}">
+						<f:selectItems value="#{menuService.sporOkuluList}"/>
+					</p:selectOneButton>				
+					<p:selectOneButton value="#{sessionObject.sporSalonu}" rendered="#{menuService.selectedMainMenu.equals('SPOR SALONU')}">
+						<f:selectItems value="#{menuService.sporSalonuList}"/>
+					</p:selectOneButton>				
+				</p:layoutUnit>
+				<p:layoutUnit id="centerin" position="center">
+				  	<ui:insert name="content" >
+				   	</ui:insert>
+				</p:layoutUnit>
+			</p:layout>
+		</p:layoutUnit>
+	</p:layout>
+
+</h:body>
+</f:view>
+</html>

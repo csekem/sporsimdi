@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:composite="http://java.sun.com/jsf/composite"
+	xmlns:p="http://primefaces.org/ui">
+		
+
+	<!-- INTERFACE -->
+	<composite:interface>
+		<composite:attribute name="modelId" type="java.lang.Long"></composite:attribute>
+		<composite:attribute name="save" type="boolean"></composite:attribute>
+	</composite:interface>
+
+	<!-- IMPLEMENTATION -->
+	<composite:implementation>
+	<h:form id="formIletisim">
+		<f:event type="preRenderView" listener="#{adresListesi.initialize(cc.attrs.modelId, cc.attrs.save)}" />
+		<f:event type="preRenderView" listener="#{telefonListesi.initialize(cc.attrs.modelId, cc.attrs.save)}" />
+		<f:event type="preRenderView" listener="#{webIletisimListesi.initialize(cc.attrs.modelId, cc.attrs.save)}" />
+	
+		<h:messages errorClass="error"/>
+
+		<p:panelGrid columns="3" styleClass="grid">
+
+			<p:panel id="pnlAdres">
+				<p:commandButton value="Yeni Adres"  action="#{adresListesi.enableNewerItem()}" update=":form:spor:formIletisim:pnlAdres" >
+				</p:commandButton>
+
+				<p:panel id="pnlNewerItemAdr" 
+						rendered="#{adresListesi.newerItem}" 
+						header="#{adresListesi.deletion ? 'Bu Adresi Sil' : adresListesi.managed ? 'Bu Adresi Güncelle' : 'Yeni Adres Tanımla'}">
+					<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+		
+						<h:outputLabel for="adresAdresTipi" value="Adres Tipi"></h:outputLabel>
+						<p:selectOneMenu id="adresAdresTipi" value="#{adresListesi.instance.adresTipi}"
+										disabled="#{adresListesi.deletion}" 
+										required="true"
+										requiredMessage="Adres Tipi giriniz">
+							<f:selectItem itemLabel="Seçiniz" itemValue="#{null}" />
+							<f:selectItems value="#{adresService.adresTipiListesi}"	var="adresTipi" itemLabel="#{adresTipi}" itemValue="#{adresTipi}"/>
+						</p:selectOneMenu>
+
+						<h:outputLabel for="adresIl" value="İl"></h:outputLabel>
+						<p:selectOneMenu id="adresIl" value="#{adresListesi.instance.il}" 
+										converter="entityConverter" disabled="#{adresListesi.deletion}">
+							<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+							<f:selectItems value="#{ilIlceService.ilListesi}" var="il" itemLabel="#{il.adi}" itemValue="#{il}"/>
+							<p:ajax update=":form:spor:formIletisim:adresIlce" listener="#{ilIlceService.ilSecildi(adresListesi.instance.il)}"></p:ajax>
+						</p:selectOneMenu>
+
+						<h:outputLabel for="adresIlce" value="İlce"></h:outputLabel>
+						<p:selectOneMenu id="adresIlce" value="#{adresListesi.instance.ilce}" 
+										converter="entityConverter" disabled="#{adresListesi.deletion}">
+							<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+							<f:selectItems value="#{ilIlceService.ilceListesi}" var="ilce" itemLabel="#{ilce.adi}" itemValue="#{ilce}"/>									
+							<p:ajax update=":form:spor:formIletisim:adresSemt" listener="#{ilIlceService.ilceSecildi(adresListesi.instance.ilce)}"></p:ajax>
+						</p:selectOneMenu>
+
+						<h:outputLabel for="adresSemt" value="Semt"></h:outputLabel>
+						<p:selectOneMenu id="adresSemt" value="#{adresListesi.instance.semt}" 
+										converter="entityConverter" disabled="#{adresListesi.deletion}">
+							<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+							<f:selectItems value="#{ilIlceService.semtListesi}" var="semt" itemLabel="#{semt.adi}" itemValue="#{semt}"/>									
+							<p:ajax update=":form:spor:formIletisim:adresPostaKodu" listener="#{adresListesi.semtSecildi()}"></p:ajax>
+						</p:selectOneMenu>
+
+						<h:outputLabel for="adresPostaKodu" value="Posta Kodu"></h:outputLabel>
+						<p:inputText id="adresPostaKodu" value="#{adresListesi.instance.postaKodu}"
+									disabled="#{adresListesi.deletion}">
+						</p:inputText>
+
+						<h:outputLabel for="adresAdres" value="Adres"></h:outputLabel>
+						<p:inputText id="adresAdres" value="#{adresListesi.instance.adres}"
+									disabled="#{adresListesi.deletion}">
+						</p:inputText>
+
+						<h:outputLabel for="adresMahalle" value="Mahalle"></h:outputLabel>
+						<p:inputText id="adresMahalle" value="#{adresListesi.instance.mahalle}"
+									disabled="#{adresListesi.deletion}">
+						</p:inputText>
+		
+						<p:commandButton value="Vazgeç"
+										id="btnVazgecAdr" 
+										action="#{adresListesi.disableNewerItem()}"
+										update=":form:spor:formIletisim:pnlAdres"
+										ajax="true"
+										process=":form:spor:formIletisim:pnlAdres"/>
+						<p:commandButton value="#{adresListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										id="btnKaydetAdr" 
+										action="#{adresListesi.save()}"
+										update=":form:spor:formIletisim:pnlAdres"
+										rendered="#{!adresListesi.deletion}"/>
+						<p:commandButton value="Sil"
+										id="btnSilAdr" 
+										action="#{adresListesi.delete()}"
+										update=":form:spor:formIletisim:pnlAdres"
+										rendered="#{adresListesi.deletion}"/>
+		
+					</p:panelGrid>
+				</p:panel>
+
+				<p:dataTable value="#{adresListesi.list}" var="adres" id="tblAdres" emptyMessage="Kayıt bulunamadı.">
+					<f:facet name="header">
+						Adresler
+					</f:facet>
+					<p:column headerText="Adres">
+						<h:outputText value="#{adres.adresTipi} - " />
+						<h:outputText value="#{adres.adres}, " />
+						<h:outputText value="#{adres.mahalle} Mah. "/>
+						<h:outputText value="#{adres.semt.adi}, "/>
+						<h:outputText value="#{adres.ilce.adi} / "/>
+						<h:outputText value="#{adres.il.adi} "/>
+						<h:outputText value="( #{adres.postaKodu} )"/>
+					</p:column>
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{adresListesi.updateInstance(adres)}" 
+										update=":form:spor:formIletisim:pnlAdres" 
+										 >
+						</p:commandButton>
+						<p:commandButton value="Sil" action="#{adresListesi.deleteInstance(adres)}" 
+										update=":form:spor:formIletisim:pnlAdres"
+										>
+						</p:commandButton>
+					</p:column>	
+
+				</p:dataTable>
+			
+			</p:panel>
+
+			<p:panel id="pnlTelefon">
+				<p:commandButton value="Yeni Telefon"  action="#{telefonListesi.enableNewerItem()}" update=":form:spor:formIletisim:pnlTelefon" >
+				</p:commandButton>
+
+				<p:panel id="pnlNewerItemTel" 
+						rendered="#{telefonListesi.newerItem}" 
+						header="#{telefonListesi.deletion ? 'Bu Telefonu Sil' : telefonListesi.managed ? 'Bu Telefonu Güncelle' : 'Yeni Telefon Tanımla'}">
+					<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+						<h:outputLabel for="telTelefonTipi" value="Telefon Tipi"></h:outputLabel>
+						<p:selectOneMenu id="telTelefonTipi" value="#{telefonListesi.instance.telefonTipi}"
+										disabled="#{telefonListesi.deletion}">
+							<f:selectItems value="#{telefonService.telefonTipiListesi}" var="telefonTipi" itemLabel="#{telefonTipi}" itemValue="#{telefonTipi}"/>
+						</p:selectOneMenu>
+
+						<h:outputLabel for="telTelefon" value="Telefon"></h:outputLabel>
+						<p:inputMask mask="(999) 999 99 99" id="telTelefon" value="#{telefonListesi.instance.telefon}"
+									disabled="#{telefonListesi.deletion}">
+						</p:inputMask>
+		
+						<p:commandButton value="Vazgeç"
+										id="btnVazgecTel" 
+										action="#{telefonListesi.disableNewerItem()}"
+										update=":form:spor:formIletisim:pnlTelefon"
+										ajax="true"
+										process=":form:spor:formIletisim:pnlTelefon"/>
+						<p:commandButton value="#{telefonListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										id="btnKaydetTel" 
+										action="#{telefonListesi.save()}"
+										update=":form:spor:formIletisim:pnlTelefon"
+										rendered="#{!telefonListesi.deletion}"/>
+						<p:commandButton value="Sil"
+										id="btnSilTel" 
+										action="#{telefonListesi.delete()}"
+										update=":form:spor:formIletisim:pnlTelefon"
+										rendered="#{telefonListesi.deletion}"/>
+		
+					</p:panelGrid>
+				</p:panel>
+
+				<p:dataTable value="#{telefonListesi.list}" var="telefon" id="tblTelefon" emptyMessage="Kayıt bulunamadı.">
+					<f:facet name="header">
+						Telefonlar
+					</f:facet>
+					<p:column headerText="Telefon">
+						<h:outputText value="#{telefon.telefonTipi} - " />
+						<h:outputText value="#{telefon.telefon}" />
+					</p:column>
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{telefonListesi.updateInstance(telefon)}" 
+										update=":form:spor:formIletisim:pnlTelefon" 
+										 >
+						</p:commandButton>
+						<p:commandButton value="Sil" action="#{telefonListesi.deleteInstance(telefon)}" 
+										update=":form:spor:formIletisim:pnlTelefon"
+										>
+						</p:commandButton>
+					</p:column>	
+
+				</p:dataTable>
+			
+			</p:panel>
+
+
+			<p:panel id="pnlWeb">
+				<p:commandButton value="Yeni Kayıt"  action="#{webIletisimListesi.enableNewerItem()}" update=":form:spor:formIletisim:pnlWeb" >
+				</p:commandButton>
+
+				<p:panel id="pnlNewerItemWeb" 
+						rendered="#{webIletisimListesi.newerItem}" 
+						header="#{webIletisimListesi.deletion ? 'Bu Kaydı Sil' : webIletisimListesi.managed ? 'Bu Kaydı Güncelle' : 'Yeni Kayıt Tanımla'}">
+					<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+						<h:outputLabel for="webIletisimTipi" value="Sosal Medya Tipi"></h:outputLabel>
+						<p:selectOneMenu id="webIletisimTipi" value="#{webIletisimListesi.instance.webIletisimTipi}"
+										disabled="#{webIletisimListesi.deletion}">
+							<f:selectItems value="#{webIletisimService.webIletisimTipiListesi}" var="webTipi" itemLabel="#{webTipi}" itemValue="#{webTipi}"/>
+						</p:selectOneMenu>
+
+						<h:outputLabel for="webWeb" value="Değeri"></h:outputLabel>
+						<p:inputText id="webWeb" value="#{webIletisimListesi.instance.webIletisim}"
+									disabled="#{webIletisimListesi.deletion}">
+						</p:inputText>
+		
+						<p:commandButton value="Vazgeç"
+										id="btnVazgecWeb" 
+										action="#{webIletisimListesi.disableNewerItem()}"
+										update=":form:spor:formIletisim:pnlWeb"
+										ajax="true"
+										process=":form:spor:formIletisim:pnlWeb"/>
+						<p:commandButton value="#{webIletisimListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										id="btnKaydetWeb" 
+										action="#{webIletisimListesi.save()}"
+										update=":form:spor:formIletisim:pnlWeb"
+										rendered="#{!webIletisimListesi.deletion}"/>
+						<p:commandButton value="Sil"
+										id="btnSilWeb" 
+										action="#{webIletisimListesi.delete()}"
+										update=":form:spor:formIletisim:pnlWeb"
+										rendered="#{webIletisimListesi.deletion}"/>
+		
+					</p:panelGrid>
+				</p:panel>
+
+				<p:dataTable value="#{webIletisimListesi.list}" var="web" id="tblWeb" emptyMessage="Kayıt bulunamadı.">
+					<f:facet name="header">
+						Sosyal Medya Bilgileri
+					</f:facet>
+					<p:column headerText="Sosyal Medya">
+						<h:outputText value="#{web.webIletisimTipi} - " />
+						<h:outputText value="#{web.webIletisim}" />
+					</p:column>
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{webIletisimListesi.updateInstance(web)}" 
+										update=":form:spor:formIletisim:pnlWeb" 
+										 >
+						</p:commandButton>
+						<p:commandButton value="Sil" action="#{webIletisimListesi.deleteInstance(web)}" 
+										update=":form:spor:formIletisim:pnlWeb"
+										>
+						</p:commandButton>
+					</p:column>	
+
+				</p:dataTable>
+			
+			</p:panel>
+			
+		</p:panelGrid>			
+	
+	</h:form>
+	
+	</composite:implementation>
+
+</html>

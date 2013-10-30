@@ -1,0 +1,288 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<h:outputText value="DEFTER" style="color:red"/>
+	</h:head>
+		
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+
+	<h:form id="form">
+
+ 		<p:tree value="#{defterService.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{defterService.selectedNode}"
+				>
+			<p:ajax event="select" update=":form" listener="#{defterService.onNodeSelect}"/>	
+				<p:treeNode>
+					<h:outputText value="#{node}" />
+				</p:treeNode>
+		</p:tree>
+ 
+ 		<br />
+
+		<p:panel>
+			<h3>
+				<h:outputText value="Kasa'daki Bakiye: #{defterService.sonBakiye}" style="color:red"/>
+			</h3>
+		</p:panel>
+					
+		<p:panel id="pnlButton">
+			<p:commandButton action="#{defterService.gunCikar()}" value="Bir Önceki Gün"
+			    id="navLeft" update=":form" icon="ui-icon-triangle-1-w" />
+
+			<p:outputLabel for="tarih" value="Tarih" />
+			<p:calendar id="tarih"	value="#{defterService.tarih}" 
+						locale="tr"  navigator="true"
+						showButtonPanel="true"
+						required="false" requiredMessage="Tarihi giriniz!"
+						widgetVar="wTarih" 
+						showOn="button">
+				<p:ajax event="dateSelect" listener="#{defterService.onDateSelect}" update=":form"/>
+			</p:calendar>
+
+			<p:commandButton  actionListener="#{defterService.gunEkle()}" value="Bir Sonraki Gün"
+			    id="navRight" update=":form:pnlDefter,:form" icon="ui-icon-triangle-1-e" />    
+			    
+			<p:spacer width="100" height="0"></p:spacer>
+
+			<p:commandButton value="Yeni Kayıt" action="#{defterHome.sayfaLoad()}" 
+							onclick="modalUpdateWidget.show();" update=":form:updPanelGrid">
+				<f:param name="tarih" value="#{defterService.tarih}"></f:param>
+			</p:commandButton>
+		</p:panel>
+				
+		<p:panel id="pnlDefter">
+			<p:dataTable id="tblDefter" var="defter" value="#{defterService.defterler}"
+						widgetVar="tblUye" emptyMessage="Bu tarihte defter kaydı yok!"	
+			>
+				<p:columnGroup type="header">
+					<p:row>
+						<p:column colspan="7" headerText="Dünden Kalan" style="text-align:right"/>
+						<p:column headerText="#{defterService.dunkuBakiye}"/>
+						<p:column colspan="1"/>
+					</p:row>
+					<p:row>
+						<p:column headerText="No"/>
+						<p:column headerText="Tarih"/>
+						<p:column headerText="Kullanici"/>
+						<p:column headerText="Kalem"/>
+						<p:column headerText="Açıklama"/>
+						<p:column headerText="Gider"/>
+						<p:column headerText="Gelir"/>
+						<p:column headerText="Bakiye"/>
+						<p:column headerText="Düzenle"/>
+					</p:row>			
+				</p:columnGroup>
+				
+				<p:column id="colId">
+					<h:outputText value="#{defter.id}"/>
+				</p:column>
+				<p:column id="colTarih">
+					<h:outputText value="#{defter.tarih}">
+						<f:convertDateTime timeZone="Turkey" pattern="EEEE dd.MM.yyyy" locale="tr"/>
+					</h:outputText>
+				</p:column>
+				<p:column id="colKullanici">
+					<h:outputText value="#{defter.kullanici.kisi.adSoyad}" />
+				</p:column>
+				<p:column id="colKalem">
+					<h:outputText value="#{defter.kalem.adi}" />
+				</p:column>
+				
+				<p:column id="colAciklama">
+					<p:commandLink value="#{defter.aciklama}" 
+								action="#{defterService.yonlendirReference(defter.referenceModel,defter.referenceId)}"
+								rendered="#{defter.referenceId!=null}">
+					</p:commandLink>
+					<h:outputText value="#{defter.aciklama}"
+								rendered="#{defter.referenceId==null}"/>
+				</p:column>
+				<p:column id="colGider" style="text-align:right">
+					<h:outputText value="#{defter.gider}">
+						<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+					</h:outputText>
+				</p:column>
+				<p:column id="colGelir" style="text-align:right">
+					<h:outputText value="#{defter.gelir}">
+						<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+					</h:outputText>
+				</p:column>
+				<p:column id="colBakiye" style="text-align:right">
+					<h:outputText value="#{defter.bakiye}">
+						<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+					</h:outputText>
+				</p:column>
+	
+				<p:column id="colDuzenle">
+					<p:commandButton value="Güncelle" 
+									action="#{defterHome.sayfaLoad()}" 
+									onclick="modalUpdateWidget.show();" 
+									update=":form:updPanelGrid"
+									disabled="#{defter.referenceId!=null}">
+						<f:param name="defterId" value="#{defter.id}"></f:param>
+					</p:commandButton>
+					<p:commandButton value="Sil" 
+									action="#{defterHome.sayfaLoad()}" 
+									onclick="modalDelete.show();" 
+									update=":form:delPanelGrid"
+									disabled="#{defter.referenceId!=null}">
+						<f:param name="defterId" value="#{defter.id}"></f:param>
+					</p:commandButton>
+				</p:column>
+	
+				<p:columnGroup type="footer">
+					<p:row>
+						<p:column colspan="5" footerText="Toplam" style="text-align:right"/>
+						<p:column footerText="#{defterService.bugunGider}"/>
+						<p:column footerText="#{defterService.bugunGelir}"/>
+						<p:column footerText="#{defterService.bugunBakiye}"/>
+						<p:column colspan="1"/>
+					</p:row>
+					<p:row>
+						<p:column colspan="7" footerText="Yarına Kalan" style="text-align:right"/>
+						<p:column footerText="#{defterService.yarinBakiye}"/>
+						<p:column colspan="1"/>
+					</p:row>
+				</p:columnGroup>
+	
+			</p:dataTable>				
+		</p:panel>
+
+		<ui:remove>-----------------------------------DEFTER KAYIT ----------------------------</ui:remove>
+		<p:dialog widgetVar="modalUpdateWidget" id="modalUpdate" header="Defter Kayıt">	
+			<p:panelGrid columns="2" id="updPanelGrid" style="width:500px;">
+				<h:outputLabel for="updTarih" value="Tarih" />
+				<p:calendar id="updTarih" value="#{defterHome.instance.tarih}" 
+								locale="tr"  widgetVar="updWidget" showOn="button"
+								disabled="true" />
+							
+				<h:outputLabel for="updKalem" value="Kalem" />
+				<p:fieldset>
+					<p:selectOneMenu id="updKalem" value="#{defterHome.instance.kalem}"
+									effect="fade" converter="entityConverter">
+						<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+						<f:selectItems value="#{kalemHome.listKalemByIsletme(sessionObject.selectedIsletme.id)}" var="kalem" 
+										itemLabel="#{kalem.adi}" itemValue="#{kalem}" />
+					</p:selectOneMenu>
+					<p:commandLink value="Yeni Kalem Ekleyin"  
+									action="#{kalemHome.sayfaLoad()}"
+									oncomplete="dlgKalem.show()" 
+									process="@this"/>
+				</p:fieldset>
+				
+				<h:outputLabel for="updAciklama" value="Açıklama" />
+				<p:inputText id="updAciklama" 
+							value="#{defterHome.instance.aciklama}" >
+				</p:inputText>
+	
+				<h:outputText value="Gider" />
+				<h:outputText value="Gelir" />
+
+				<p:inputText id="updGider" 
+							value="#{defterHome.instance.gider}" >
+				</p:inputText>
+
+				<p:inputText id="updGelir" 
+							value="#{defterHome.instance.gelir}" >
+				</p:inputText>
+
+				<p:commandButton value="Vazgeç"
+								id="updVazgec" oncomplete="modalUpdateWidget.hide()"/>
+				<p:commandButton value="Kaydet" 
+								action="#{defterHome.saveWithoutNavigation()}" 
+								update="form"
+								immediate="false"
+								oncomplete="modalUpdateWidget.hide()"
+				>
+				</p:commandButton>
+			</p:panelGrid>
+		</p:dialog>		
+
+		<ui:remove>-----------------------------------DEFTER SİL ----------------------------</ui:remove>
+		<p:dialog widgetVar="modalDelete" id="modalDelete" header="Sil?">
+				<p:panelGrid columns="2" id="delPanelGrid">
+					<h:outputLabel for="delTarih" value="Tarih" />
+					<h:outputText value="#{defterHome.instance.tarih}" id="delTarih">
+						<f:convertDateTime pattern="EEEE dd.MM.yyyy" locale="tr"/>
+					</h:outputText>
+	
+					<h:outputLabel for="delAciklama" value="Açıklama" />
+					<h:outputText id="delAciklama" 
+								value="#{defterHome.instance.aciklama}" >
+					</h:outputText>
+	
+					<h:outputLabel for="delKalem" value="Kalem" />
+					<h:outputText id="delKalem" 
+								value="#{defterHome.instance.kalem}" >
+					</h:outputText>
+	
+					<h:outputText value="Gider" />
+					<h:outputText value="Gelir" />
+	
+					<h:outputText id="delGider" 
+								value="#{defterHome.instance.gider}" >
+					</h:outputText>
+	
+					<h:outputText id="delGelir" 
+								value="#{defterHome.instance.gelir}" >
+					</h:outputText>
+	
+					<p:commandButton value="Vazgeç"
+									id="delVazgec" oncomplete="modalDelete.hide()"/>
+					<p:commandButton id="delSil" 
+									value="Sil" 
+									action="#{defterHome.delete()}" 
+									update="form"
+									immediate="false"
+									oncomplete="modalDelete.hide()"
+									process=":form:delSil"
+					>
+					</p:commandButton>
+				</p:panelGrid>
+		</p:dialog>		
+
+		<ui:remove>-----------------------------------KALEM EKLE ----------------------</ui:remove>
+		<p:dialog widgetVar="dlgKalem" modal="true" header="KALEM EKLE" id="dlgKalemEkle">
+			<p:panelGrid columns="2">
+				<p:outputLabel for="kalem" value="Kalem"/>
+				<p:inputText id="kalem" 
+							value="#{kalemHome.instance.adi}" 
+							/>
+
+			 	<p:commandButton value="KAPAT"  
+			 					oncomplete="dlgKalem.hide()" 
+			 					update=":form:pnlDefter"
+			 					process="@this"
+			 					/>
+				<p:commandButton value="KAYDET"
+								action="#{kalemHome.saveWithoutNavigation()}"
+			 					oncomplete="dlgKalem.hide()" 
+			 					update=":form"
+			 					process=":form:dlgKalemEkle"
+								>
+			 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+				</p:commandButton>	
+			</p:panelGrid>
+
+		</p:dialog>
+
+		<ui:remove>-----------------------------------WAIT ----------------------</ui:remove>
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+
+	</h:form>
+			
+  	</ui:define>
+</ui:composition>
+
+</f:view>

@@ -1,0 +1,106 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:loadBundle basename="#{sessionObject.labelsProperties}" var="labels"/>
+
+	<h:head>#{labels.uye_upper}LER
+	
+		<style type="text/css">
+			.ui-widget-content .ui-datalist-content{
+				border: none;
+				background: transparent;
+				background-image: none;
+			}
+		</style>
+
+	</h:head>
+		
+	<h:form id="form">
+
+		<p:panelGrid columns="2">
+			<h:outputText value="#{labels.donem}" />
+			<p:selectOneMenu id="donemFilter" value="#{uyeService.filterDonem}" 
+				effect="fade" converter="entityConverter">
+				<f:selectItem itemLabel="Hepsi" itemValue="0" />					
+				<f:selectItems value="#{isletmeService.isletmeninDonemListesi}" var="donem" 
+								itemLabel="#{donem.adi}" itemValue="#{donem}" />
+				<p:ajax update="grupFilter" event="change" listener="#{grupService.doneminGruplari(aidatService.filterDonem)}" />
+			</p:selectOneMenu>
+
+			<h:outputText value="Grup" 
+							rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+			<p:selectOneMenu id="grupFilter" value="#{uyeService.filterGrup}"
+								effect="fade" converter="entityConverter"
+								rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}">
+				<f:selectItem itemLabel="Hepsi" itemValue="0" />
+				<f:selectItems value="#{grupService.doneminGruplari(uyeService.filterDonem)}" var="grup"
+								itemLabel="#{grup.adi}" itemValue="#{grup}" />
+			</p:selectOneMenu>		
+
+			<h:outputText value="#{labels.uye}"/>
+			<p:inputText id="uyefilter" value="#{uyeService.filterUye}">
+			</p:inputText>
+
+			<p:commandButton value="Listele" 
+								action="#{uyeService.listele()}" 
+								update="form"
+								immediate="false"
+			>
+			</p:commandButton>
+			<h:outputText value="" />
+		</p:panelGrid>		
+
+		<p:commandButton value="Yeni #{labels.uye}" action="#{uyeService.yonlendir(null)}" >
+		</p:commandButton>	
+
+		<p:dataTable id="tblUyeler" var="uye" value="#{uyeService.uyeler}"
+					widgetVar="tblUye" emptyMessage="Kayıtlı #{labels.uye}niz Yok!"	
+					selection="#{uyeService.uye}" 
+		>
+			<p:column id="colDonem" 
+					headerText="#{labels.donem}" 
+			>
+				<p:dataList value="#{uye.grupListesi.size() == 0 ? null : uye.grupListesi}" var="listDonem" itemType="disc">
+					<h:outputText value="#{listDonem.grup.donem.adi}"/>
+				</p:dataList>
+			</p:column>
+			<p:column id="colGrup" 
+					headerText="Grup"
+					rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"
+			>
+				<p:dataList value="#{uye.grupListesi.size() == 0 ? null : uye.grupListesi}" var="listGrup" itemType="disc">
+					<h:outputText value="#{listGrup.grup.adi}"/>
+				</p:dataList>
+			</p:column>
+			<p:column id="colAdi" 
+					headerText="#{labels.uye} Adı"
+			>
+				<h:outputText value="#{uye.ad}" />
+			</p:column>
+			
+			<p:column id="colSoyadi" 
+					headerText="#{labels.uye} Soyadı"
+			>
+				<h:outputText value="#{uye.soyad}" />
+			</p:column>
+
+			<p:column id="colDuzenle"
+					headerText="Düzenle"
+			>
+				<p:commandButton value="Güncelle"  action="#{uyeService.yonlendir(uye.id)}" >
+				</p:commandButton>
+			</p:column>
+		</p:dataTable>		
+		
+	</h:form>
+		
+  	</ui:define>
+</ui:composition>
+
+</f:view>

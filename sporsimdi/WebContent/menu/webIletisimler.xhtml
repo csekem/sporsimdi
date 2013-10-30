@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	xmlns:p="http://primefaces.org/ui" >
+
+		
+	<p:panel id="pnlWeb">
+		<p:commandButton value="Yeni Kayıt"  action="#{webIletisimListesi.enableNewerItem()}" update=":form:pnlWeb" process="@this">
+		</p:commandButton>
+
+		<p:panel id="pnlNewerItemWeb" 
+				rendered="#{webIletisimListesi.newerItem}" 
+				header="#{webIletisimListesi.deletion ? 'Bu Kaydı Sil' : webIletisimListesi.managed ? 'Bu Kaydı Güncelle' : 'Yeni Kayıt Tanımla'}">
+			<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+				<h:outputLabel for="webIletisimTipi" value="Sosal Medya Tipi"></h:outputLabel>
+				<p:selectOneMenu id="webIletisimTipi" value="#{webIletisimListesi.instance.webIletisimTipi}"
+								disabled="#{webIletisimListesi.deletion}">
+					<f:selectItems value="#{webIletisimService.webIletisimTipiListesi}" var="webTipi" itemLabel="#{webTipi}" itemValue="#{webTipi}"/>
+				</p:selectOneMenu>
+
+				<h:outputLabel for="webWeb" value="Değeri"></h:outputLabel>
+				<p:inputText id="webWeb" value="#{webIletisimListesi.instance.webIletisim}"
+							disabled="#{webIletisimListesi.deletion}">
+				</p:inputText>
+
+				<p:commandButton value="Vazgeç"
+								id="btnVazgecWeb" 
+								action="#{webIletisimListesi.disableNewerItem()}"
+								update=":form:pnlWeb"
+								ajax="true"
+								process=":form:pnlWeb"/>
+				<p:commandButton value="#{webIletisimListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								id="btnKaydetWeb" 
+								action="#{webIletisimListesi.save()}"
+								update=":form:pnlWeb"
+								rendered="#{!webIletisimListesi.deletion}"
+								process=":form:pnlWeb"/>
+				<p:commandButton value="Sil"
+								id="btnSilWeb" 
+								action="#{webIletisimListesi.delete()}"
+								update=":form:pnlWeb"
+								rendered="#{webIletisimListesi.deletion}"
+								process=":form:pnlWeb"/>
+
+			</p:panelGrid>
+		</p:panel>
+
+		<p:dataTable value="#{webIletisimListesi.list}" var="web" id="tblWeb" emptyMessage="Kayıt bulunamadı.">
+			<f:facet name="header">
+				Sosyal Medya Bilgileri
+			</f:facet>
+			<p:column headerText="Sosyal Medya">
+				<h:outputText value="#{web.webIletisimTipi} - " />
+				<h:outputText value="#{web.webIletisim}" />
+			</p:column>
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{webIletisimListesi.updateInstance(web)}" 
+								update=":form:pnlWeb" 
+								 >
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{webIletisimListesi.deleteInstance(web)}" 
+								update=":form:pnlWeb"
+								>
+				</p:commandButton>
+			</p:column>	
+
+		</p:dataTable>
+	
+	</p:panel>
+
+</html>

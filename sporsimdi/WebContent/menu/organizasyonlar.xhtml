@@ -1,0 +1,551 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYONLAR')}" />
+	<f:event type="preRenderView" listener="#{organizasyonYapisiService.sayfaLoad}" />
+
+	<h:head>#{sessionObject.selectedIsletme.unvan} işletmesinde bulunan organizasyon yapısı</h:head>
+
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+
+	<h:form id="form">
+		<p:tree value="#{organizasyonYapisiService.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{organizasyonYapisiService.selectedNode}"
+				>
+			<p:ajax event="select" update=":form:pnlPanel" listener="#{organizasyonYapisiService.onNodeSelect}"/>	
+				<p:treeNode>
+					<h:outputText value="#{node}" />
+				</p:treeNode>
+		</p:tree>
+		
+		<br />
+		
+		<p:panel id="pnlPanel">
+		
+			<ui:remove>-----------------------------------ORGANIZASYONLAR----------------------</ui:remove>
+			<p:panel id="pnlOrganizasyon" 
+					rendered="#{organizasyonYapisiService.selectedLevel.equals('ISLETME')}" 
+					header="#{sessionObject.selectedIsletme.unvan} işletmesindeki Organizasyonları belirleyin"
+					>
+				<p:commandButton value="Yeni Organizasyon"  action="#{organizasyonListesi.enableNewerItem()}" update=":form:pnlOrganizasyon" process=":form:pnlOrganizasyon"/>
+		
+				<p:panel id="pnlpnl" rendered="#{organizasyonListesi.newerItem}" header="Yeni Organizasyon Tanımla">
+					<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+
+						<p:outputLabel for="orgTipi" value="Bu organizasyon hangi amaç için kullanılıyor"/>
+						<p:selectOneMenu id="orgTipi"
+											value="#{organizasyonListesi.instance.organizasyonTipi}"
+											disabled="#{organizasyonListesi.deletion}"
+											required="true"
+											requiredMessage="Organizasyon amacını seçiniz!"
+											>
+							<f:selectItem itemLabel="Seçiniz" itemValue="0"
+											/>
+							<f:selectItems value="#{organizasyonListesi.organizasyonTipiListesi}"  var="tip" 
+											itemLabel="#{tip}" itemValue="#{tip}"
+											/>
+						</p:selectOneMenu>
+						<h:outputText value="" />
+				
+						<p:outputLabel for="orgAdi" value="Organizasyon Adı"/>
+						<p:inputText id="orgAdi" 
+									value="#{organizasyonListesi.instance.adi}" 
+									disabled="#{organizasyonListesi.deletion}"
+									required="true"
+									requiredMessage="Organizasyon adı giriniz!"
+									/>
+						<h:outputText value="" />
+
+						<p:outputLabel for="orgBasTarih" value="Organizasyon Başlangıç Tarihi"/>
+						<ss:tarih id="orgBasTarih" value="#{organizasyonListesi.instance.tarihBaslangic}" disabled="#{organizasyonListesi.deletion}"/>
+						<h:outputText value="" />
+
+						<p:outputLabel for="orgBitTarih" value="Organizasyon Bitiş Tarihi"/>
+						<ss:tarih id="orgBitTarih" value="#{organizasyonListesi.instance.tarihBitis}" disabled="#{organizasyonListesi.deletion}"/>
+						<h:outputText value="" />
+
+						<p:commandButton value="Vazgeç"
+										action="#{organizasyonYapisiService.cancelList(organizasyonListesi)}"
+										update=":form:pnlPanel,:form:tree"
+										process="@this"/>
+						<p:commandButton value="#{organizasyonListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										action="#{organizasyonYapisiService.saveList(organizasyonListesi)}"
+										rendered="#{!organizasyonListesi.deletion}"
+										process=":form:pnlOrganizasyon"
+										/>
+						<p:commandButton value="Sil"
+										action="#{organizasyonYapisiService.deleteList(organizasyonListesi)}"
+										update=":form:pnlPanel,:form:tree"
+										rendered="#{organizasyonListesi.deletion}"
+										process=":form:pnlOrganizasyon"
+										/>
+						<h:outputText value="" />
+
+					</p:panelGrid>
+		
+				</p:panel>
+				
+				<br />
+
+				<p:dataTable var="org" 
+							value="#{organizasyonListesi.list}"
+							emptyMessage="Henüz tanımlı bir organizasyon yapısı yok. 'Yeni Organizasyon' butonu ile tanımlayabilirsiniz."
+							>
+					<f:facet name="header">
+						<h:outputText value="#{sessionObject.selectedIsletme.unvan} işletmesindeki organizasyonlar" />
+					</f:facet>
+
+					<p:column headerText="Organizasyon Adı">
+						<h:outputText value="#{org.adi}" />
+					</p:column>
+			
+					<p:column headerText="Organizasyon Türü">
+						<h:outputText value="#{org.organizasyonTipi}" />
+					</p:column>
+
+					<p:column headerText="Başlama Tarihi">
+						<ss:tarihGoster value="#{org.tarihBaslangic}" />
+					</p:column>
+
+					<p:column headerText="Bitiş Tarihi">
+						<ss:tarihGoster value="#{org.tarihBitis}" />
+					</p:column>
+
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{organizasyonListesi.updateInstance(org)}" update=":form:pnlPanel" process=":form:pnlOrganizasyon"/>
+						<p:commandButton value="Sil" action="#{organizasyonListesi.deleteInstance(org)}" update=":form:pnlPanel" process=":form:pnlOrganizasyon"/>
+					</p:column>	
+
+				</p:dataTable>
+
+			</p:panel>
+
+			<ui:remove>-----------------------------------ORG TESİSLER----------------------</ui:remove>
+			<p:panel id="pnlOrgTesis" 
+					rendered="#{organizasyonYapisiService.selectedLevel.equals('ORGANIZASYON')}"
+					header="#{orgTesisListesi.modelSuper} organizasyonunun yapıldığı Tesisleri belirleyin"
+					>
+				<p:commandButton value="Yeni Tesis Seç"  action="#{orgTesisListesi.enableNewerItem()}" update=":form:pnlOrgTesis" process=":form:pnlOrgTesis"/>
+		
+				<p:panel rendered="#{orgTesisListesi.newerItem}" header="Yeni Tesis Seç">
+					<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+				
+						<p:outputLabel for="orgTesis" value="Hangi tesiste yapılıyor"/>
+						<p:fieldset>
+							<p:selectOneMenu id="orgTesis"
+												value="#{orgTesisListesi.instance.tesis}"
+												disabled="#{orgTesisListesi.deletion}"
+												converter="entityConverter"
+												required="true"
+												requiredMessage="Organizasyonunu yapılacağı tesis seçiniz!"												
+												>
+								<f:selectItem itemLabel="Seçiniz" itemValue="0"
+												/>
+								<f:selectItems value="#{tesisService.listTesisByIsletme(sessionObject.selectedIsletme.id)}"  var="tesis" 
+												itemLabel="#{tesis.adi}" itemValue="#{tesis}"
+												noSelectionValue="Tesis Yok"/>
+								<p:ajax update=":form:pnlOrgTesis" listener="#{orgTesisListesi.tesisSecildi(orgTesisListesi.instance.tesis)}"/>
+							</p:selectOneMenu>
+							<p:commandLink value="#{tesisService.listTesisByIsletme(sessionObject.selectedIsletme.id).size() == 0 ? 'Hiç tesis yok. Tesis Ekleyin' : 'Tesis Ekleyin'}"  
+											action="#{tesisHome.sayfaLoad()}" 
+											oncomplete="dlgTesis.show()" 
+											disabled="#{orgTesisListesi.deletion}"
+											process="@this"/>
+						</p:fieldset>
+		
+						<p:outputLabel for="orgTesisAdi" value="Tesisdeki Adı"/>
+						<p:inputText id="orgTesisAdi" 
+									value="#{orgTesisListesi.instance.adi}" 
+									disabled="#{orgTesisListesi.deletion}"
+									required="true"
+									requiredMessage="Tesis adı giriniz!"
+									/>
+
+						<p:commandButton value="Vazgeç"
+										action="#{organizasyonYapisiService.cancelList(orgTesisListesi)}"
+										update=":form:pnlOrgTesis"
+										process="@this"
+										/>
+						<p:commandButton value="#{orgTesisListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										action="#{organizasyonYapisiService.saveList(orgTesisListesi)}"
+										update=":form:pnlOrgTesis,:form:tree"
+										rendered="#{!orgTesisListesi.deletion}"
+										disabled="#{tesisService.listTesisByIsletme(sessionObject.selectedIsletme.id).size() == 0}"
+										process=":form:pnlOrgTesis"
+										/>
+						<p:commandButton value="Sil"
+										action="#{organizasyonYapisiService.deleteList(orgTesisListesi)}"
+										update=":form:pnlOrgTesis,:form:tree"
+										rendered="#{orgTesisListesi.deletion}"
+										process=":form:pnlOrgTesis"
+										/>
+
+					</p:panelGrid>
+		
+				</p:panel>
+			
+				<br />
+
+				<p:dataTable var="orgTesis" 
+							value="#{orgTesisListesi.list}"
+							emptyMessage="Henüz bu organizasyonun yapılacağı bir tesis seçilmemiş. Yeni Tesis Seç butonu ile seçebilirsiniz."
+							>
+					<f:facet name="header">
+						<h:outputText value="#{orgTesisListesi.modelSuper} organizasyonunun yapıldığı tesisler" />
+					</f:facet>
+	
+					<p:column headerText="Organizasyon yapıldığı tesisteki adı">
+						<h:outputText value="#{orgTesis.adi}" />
+					</p:column>
+				
+					<p:column headerText="Tesis">
+						<h:outputText value="#{orgTesis.tesis.adi}" />
+					</p:column>
+	
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{orgTesisListesi.updateInstance(orgTesis)}" update=":form:pnlOrgTesis" process=":form:pnlOrgTesis"/>
+						<p:commandButton value="Sil" action="#{orgTesisListesi.deleteInstance(orgTesis)}" update=":form:pnlOrgTesis" process=":form:pnlOrgTesis"/>
+					</p:column>	
+	
+				</p:dataTable>
+
+			</p:panel>
+		
+			<ui:remove>-----------------------------------GRUPLAR----------------------</ui:remove>
+			<p:panel id="pnlGrup" 
+					rendered="#{organizasyonYapisiService.selectedLevel.equals('ORGTESIS')}"
+					header="#{grupListesi.modelSuper} tesisinde tanımlı Grupları belirleyin"
+					>
+				<p:commandButton value="Yeni Grup"  action="#{grupListesi.enableNewerItem()}" update=":form:pnlGrup" process=":form:pnlGrup"/>
+		
+				<p:panel rendered="#{grupListesi.newerItem}" header="Yeni Grup Tanımla">
+					<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+				
+						<p:outputLabel for="grupAdi" value="Grubun Adı"/>
+						<p:inputText id="grupAdi" 
+									value="#{grupListesi.instance.adi}" 
+									disabled="#{grupListesi.deletion}"
+									required="true"
+									requiredMessage="Grup adı giriniz!"
+									/>
+
+						<p:outputLabel for="grupCinsiyet" value="Grubun Cinsiyeti" />
+						<p:selectOneButton id="grupCinsiyet" 
+											value="#{grupListesi.instance.grupCinsiyet}"
+											disabled="#{grupListesi.deletion}"
+											required="true"
+											requiredMessage="Grubun cinsiyetini seçiniz!"
+											>
+							<f:selectItems value="#{cinsiyetService.grupCinsiyetListesi}" var="cins" 
+											itemLabel="#{cins}" itemValue="#{cins}" />
+						</p:selectOneButton>
+
+						<h:outputText value="Grubun Yaş Aralığı" />
+						<p:fieldset id="yasFields">
+							<p:calendar id="yasBaslangic" value="#{grupListesi.instance.yasGrupBaslangic}" pattern="yyyy" locale="tr" timeZone="Turkey" />	
+							<p:calendar id="yasBitis" value="#{grupListesi.instance.yasGrupBitis}" pattern="yyyy" locale="tr" timeZone="Turkey" />
+						</p:fieldset>
+
+						<p:outputLabel for="grupAidatGun" value="Aidat Toplama Günü" />
+						<p:selectOneMenu id="grupAidatGun" 
+										value="#{grupListesi.instance.aidatGun}"
+										disabled="#{grupListesi.deletion}"
+										required="true"
+										requiredMessage="Aidat toplama günü giriniz!"
+										>
+							<f:selectItem itemLabel="Yok" itemValue="0"/>
+							<f:selectItems value="#{grupService.gunListesi}" var="gun" 
+											itemLabel="#{gun}" itemValue="#{gun}" />
+						</p:selectOneMenu>
+
+						<p:outputLabel for="grupBasTarih" value="Grup Başlangıç Tarihi"/>
+						<ss:tarih id="grupBasTarih" value="#{grupListesi.instance.tarihBaslangic}" disabled="#{grupListesi.deletion}"/>
+
+						<p:outputLabel for="grupBitTarih" value="Grup Bitiş Tarihi"/>
+						<ss:tarih id="grupBitTarih" value="#{grupListesi.instance.tarihBitis}" disabled="#{grupListesi.deletion}"/>
+
+						<p:commandButton value="Vazgeç"
+										action="#{organizasyonYapisiService.cancelList(grupListesi)}"
+										update=":form:pnlGrup,:form:tree"
+										process="@this"
+										/>
+						<p:commandButton value="#{grupListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										action="#{organizasyonYapisiService.saveList(grupListesi)}"
+										update=":form:pnlGrup,:form:tree"
+										rendered="#{!grupListesi.deletion}"
+										process=":form:pnlGrup"
+										/>
+						<p:commandButton value="Sil"
+										action="#{organizasyonYapisiService.deleteList(grupListesi)}"
+										update=":form:pnlPanel,:form:tree"
+										rendered="#{grupListesi.deletion}"
+										process=":form:pnlGrup"
+										/>
+
+					</p:panelGrid>
+		
+				</p:panel>
+			
+				<br />
+
+				<p:dataTable var="grup" 
+							value="#{grupListesi.list}"
+							emptyMessage="Henüz bu tesiste bir grup oluşturulmamış. Yeni Grup butonu ile oluşturabilirsiniz."
+							>
+					<f:facet name="header">
+						<h:outputText value="#{grupListesi.modelSuper} tesisinde tanımlı gruplar"/>
+					</f:facet>
+	
+					<p:column headerText="Grubun adı">
+						<h:outputText value="#{grup.adi}" />
+					</p:column>
+				
+					<p:column headerText="Grubun cinsiyeti">
+						<h:outputText value="#{grup.grupCinsiyet}" />
+					</p:column>
+	
+					<p:column headerText="Grubun yaş aralığı">
+						<h:outputText value="#{grup.yasGrupBaslangic}">
+							<f:convertDateTime pattern="yyyy" locale="tr" timeZone="Turkey"/>
+						</h:outputText>
+						<h:outputText value=" - " />
+						<h:outputText value="#{grup.yasGrupBitis}">
+							<f:convertDateTime pattern="yyyy" locale="tr" timeZone="Turkey"/>
+						</h:outputText>
+					</p:column>
+
+					<p:column headerText="Grubun aidat toplama günü">
+						<h:outputText value="Her ayın #{grup.aidatGun}. günü" rendered="#{grup.aidatGun>0}"/>
+						<h:outputText value="Yok" rendered="#{grup.aidatGun==0}"/>					
+					</p:column>
+
+					<p:column headerText="Başlama Tarihi">
+						<ss:tarihGoster value="#{grup.tarihBaslangic}" />
+					</p:column>
+
+					<p:column headerText="Bitiş Tarihi">
+						<ss:tarihGoster value="#{grup.tarihBitis}" />
+					</p:column>
+
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{grupListesi.updateInstance(grup)}" update=":form:pnlGrup" process=":form:pnlGrup"/>
+						<p:commandButton value="Sil" action="#{grupListesi.deleteInstance(grup)}" update=":form:pnlGrup" process=":form:pnlGrup"/>
+					</p:column>	
+	
+				</p:dataTable>
+
+			</p:panel>
+
+			<ui:remove>-----------------------------------TARİFELER----------------------</ui:remove>
+			<p:panel id="pnlTarife" 
+					rendered="#{organizasyonYapisiService.selectedLevel.equals('GRUP')}"
+					header="#{tarifeListesi.modelSuper} grubuna ait Ücret Tarifelerini belirleyin"
+					>
+				<p:commandButton value="Yeni Tarife"  action="#{tarifeListesi.enableNewerItem()}" update=":form:pnlPanel,:form:tree" process="@this"/>
+		
+				<p:panel rendered="#{tarifeListesi.newerItem}" header="Yeni Tarife Tanımla">
+					<p:panelGrid id="gridTarife" columns="2" style="margin-bottom:10px" cellpadding="5">
+				
+						<p:outputLabel for="tarifeAdi" value="Tarife Adı"/>
+						<p:inputText id="tarifeAdi" 
+									value="#{tarifeListesi.instance.adi}" 
+									disabled="#{tarifeListesi.deletion}"
+									required="true"
+									requiredMessage="Tarife adı giriniz!"
+									/>
+
+						<p:outputLabel for="trfTaksitSayi" value="Taksit Sayısı"/>
+						<p:panel>
+							<p:inputText id="trfTaksitSayi" value="#{tarifeListesi.instance.taksitSayisi}" 
+										disabled="#{tarifeListesi.deletion}" 
+										readonly="#{tarifeListesi.instance.herAy}">
+								<p:ajax event="keyup" listener="#{tarifeListesi.taksitTablosuOluştur()}" 
+											update=":form:trfToplamTutar,:form:trfDetay"></p:ajax>
+							</p:inputText>
+							<br />
+							<p:selectBooleanCheckbox id="trfTaksitYok" value="#{tarifeListesi.instance.herAy}">
+								<p:ajax listener="#{tarifeListesi.taksitSayisiYok()}" update=":form:gridTarife"></p:ajax>
+							</p:selectBooleanCheckbox>
+							<h:outputText value="Her Ay Alınacak"/>
+						</p:panel>
+
+						<p:outputLabel for="trfHerAyTutar" value="Her Ay Alınacak Tutar" rendered="#{tarifeListesi.instance.herAy}"/>
+						<p:inputText id="trfHerAyTutar" value="#{tarifeListesi.instance.herAyTutar}" rendered="#{tarifeListesi.instance.herAy}">
+						</p:inputText>
+
+						<p:outputLabel for="trfTaksitTutari" value="Taksit Tutarı" rendered="#{!tarifeListesi.instance.herAy}"/>
+						<p:inputText id="trfTaksitTutari" value="#{tarifeListesi.tumTaksitler}" rendered="#{!tarifeListesi.instance.herAy}">
+							<p:ajax event="change" listener="#{tarifeListesi.taksitTablosuOluştur()}" update=":form:trfDetay,:form:trfToplamTutar"></p:ajax>
+						</p:inputText>
+
+						<p:outputLabel for="trfDetay" value="Taksitler" rendered="#{!tarifeListesi.instance.herAy}"/>
+						<p:dataTable var="detay" 
+									id="trfDetay"
+									value="#{tarifeListesi.instance.tarifeDetayListesi}"
+									emptyMessage="Taksit sayısı giriniz."
+									disabled="#{tarifeListesi.deletion}"
+									rendered="#{!tarifeListesi.instance.herAy}"
+									>
+							<p:column headerText="Taksit No">
+								<h:outputText value="#{detay.taksitNo}"/>
+							</p:column>
+
+							<p:column headerText="Taksit Tutarı">
+								<f:facet name="header">
+									<h:outputText value="Taksit Tutarı" />
+								</f:facet>
+								<p:inputText id="trfDetayTaksit" value="#{detay.taksitTutar}">
+									<p:ajax event="change" listener="#{tarifeListesi.toplamTutarOluştur()}" update=":form:trfToplamTutar"></p:ajax>
+								</p:inputText>
+							</p:column>		
+						</p:dataTable>
+							
+						<p:outputLabel for="trfToplamTutar" value="Toplam Tutar" rendered="#{!tarifeListesi.instance.herAy}"/>
+						<h:outputText id="trfToplamTutar" value="#{tarifeListesi.instance.toplamTutar}" disabled="#{tarifeListesi.deletion}" rendered="#{!tarifeListesi.instance.herAy}">
+							<f:convertNumber type="number"/>
+						</h:outputText>
+
+						<p:outputLabel for="trfAidatGun" value="Aidat Toplama Günü"/>
+						<p:selectOneMenu id="trfAidatGun" 
+										value="#{tarifeListesi.instance.aidatGun}"
+										disabled="#{tarifeListesi.deletion}"
+										>
+							<f:selectItem itemLabel="Yok" itemValue="0"/>
+							<f:selectItems value="#{grupService.gunListesi}" var="gun" 
+											itemLabel="#{gun}" itemValue="#{gun}" />
+						</p:selectOneMenu>
+
+						<p:commandButton value="Vazgeç"
+										action="#{organizasyonYapisiService.cancelList(tarifeListesi)}"
+										update=":form:pnlTarife,:form:tree"
+										process="@this"
+										/>
+						<p:commandButton value="#{tarifeListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										action="#{organizasyonYapisiService.saveList(tarifeListesi)}"
+										update=":form:pnlPanel,:form:tree"
+										rendered="#{!tarifeListesi.deletion}"
+										process=":form:pnlTarife"
+										/>
+						<p:commandButton value="Sil"
+										action="#{organizasyonYapisiService.deleteList(tarifeListesi)}"
+										update=":form:pnlPanel,:form:tree"
+										rendered="#{tarifeListesi.deletion}"
+										process=":form:pnlTarife"
+										/>
+
+					</p:panelGrid>
+		
+				</p:panel>
+			
+				<br />
+
+				<p:dataTable var="trf" 
+							value="#{tarifeListesi.list}"
+							emptyMessage="Henüz tanımlı bir ücret tarifesi yok. Yeni Tarife butonu ile tanımlayabilirsiniz."
+							>
+					<f:facet name="header">
+						<h:outputText value="#{tarifeListesi.modelSuper} grubuna ait ücret tarifeleri"/>
+					</f:facet>
+
+					<p:column headerText="Tarife Adı">
+						<h:outputText value="#{trf.adi}" />
+					</p:column>
+			
+					<p:column headerText="Taksit Sayısı">
+						<h:outputText value="#{trf.taksitSayisi}" rendered="#{!trf.herAy}"/>
+					</p:column>
+
+					<p:column headerText="Taksitler">
+						<p:dataList value="#{trf.tarifeDetayListesi}" var="dty" rendered="#{!trf.herAy}">
+							<h:outputText value="#{dty.taksitNo}. taksit " />
+							<ss:paraGoster value="#{dty.taksitTutar}" />
+						</p:dataList>
+						<h:outputText value="Her Ay " rendered="#{trf.herAy}"/>
+						<ss:paraGoster value="#{trf.herAyTutar}" rendered="#{trf.herAy}"/>
+					</p:column>
+
+					<p:column headerText="Toplam Tutar">
+						<ss:paraGoster value="#{trf.toplamTutar}" rendered="#{!trf.herAy}"/>
+					</p:column>
+
+					<p:column headerText="Aidat Toplama Günü">
+						<h:outputText value="Her ayın #{trf.aidatGun}. günü" rendered="#{trf.aidatGun>0}"/>
+						<h:outputText value="Yok" rendered="#{trf.aidatGun==0}"/>					
+					</p:column>
+
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{tarifeListesi.updateInstance(trf)}" update=":form:pnlPanel" process=":form:pnlTarife"/>
+						<p:commandButton value="Sil" action="#{tarifeListesi.deleteInstance(trf)}" update=":form:pnlPanel" process=":form:pnlTarife"/>
+					</p:column>	
+
+				</p:dataTable>
+
+			</p:panel>
+
+		</p:panel>
+		
+		
+
+		<ui:remove>-----------------------------------TESİS EKLE ----------------------</ui:remove>
+		<p:dialog widgetVar="dlgTesis" modal="true" header="TESİS EKLE" id="dlgTesisEkle">
+			<p:panelGrid columns="2">
+				<p:outputLabel for="tesisAdi" value="Tesis Adı"/>
+				<p:inputText id="tesisAdi" 
+							value="#{tesisHome.instance.adi}" 
+							required="true"
+							requiredMessage="Tesis adı giriniz!"												
+							/>
+
+				<p:outputLabel for="tesisTipi" value="Tesis Tipi"/>
+				<p:selectOneMenu id="tesisTipi" 
+								value="#{tesisHome.instance.tesisTipi}"
+								effect="fade" 
+								converter="entityConverter"
+								required="true"
+								requiredMessage="Tesis tipi seçiniz!"												
+								>
+					<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+					<f:selectItems value="#{tesisTipiService.tesisTipiListesi}"
+						var="tip" itemLabel="#{tip.adi}" itemValue="#{tip}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel for="yuzOlcum" value="Yüz Ölçümü (m2)"/>
+				<p:inputText id="yuzOlcum" 
+							value="#{tesisHome.instance.yuzOlcumM2}"/>
+	
+			 	<p:commandButton value="KAPAT"  
+			 					oncomplete="dlgTesis.hide()" 
+			 					update=":form:pnlOrgTesis"
+			 					process="@this"
+			 					/>
+				<p:commandButton value="KAYDET"
+								action="#{tesisHome.saveWithoutNavigation()}"
+			 					oncomplete="dlgTesis.hide()" 
+			 					update=":form"
+			 					process=":form:dlgTesisEkle"
+								>
+			 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+				</p:commandButton>	
+			</p:panelGrid>
+
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+
+	</h:form>
+
+    </ui:define>
+</ui:composition>
+
+</f:view>

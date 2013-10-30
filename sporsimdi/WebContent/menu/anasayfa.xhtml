@@ -1,0 +1,106 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ANASAYFA')}" />
+
+	<h:head>ANASAYFA
+			<h:outputStylesheet name="sporsimdi.css" library="css" />
+	</h:head>
+
+	<h:form id="form">
+    	<p:panel>
+			<h:outputText value="#{sessionObject.kisi.adSoyad} ; www.sporsimdi.com 'a Hoşgeldiniz"></h:outputText>
+   		</p:panel>
+
+		<br />
+		
+		<p:panel id="isletmePanel" header="İşletme Seçimi" rendered="#{!sessionObject.tekIsletme}">
+			<p:dataTable var="isletme" 
+						value="#{sessionObject.kisi.isletmeListesi}"
+						id="tblIsletme"
+			>
+				<f:facet name="header">
+					Hangi işletmeniz için işlem yapmak istediğinizi seçiniz.
+				</f:facet>
+				<p:column headerText="Seç">
+					<p:commandButton value="Seç" action="#{menuService.isletmeSec(isletme)}" update=":form,:menuForm"/>
+				</p:column>						
+				<p:column headerText="İşletme Türü">
+					<h:outputText value="#{isletmeService.isletmeTipiGetir(isletme)}" />
+				</p:column>						
+				<p:column headerText="İşletme Ünvanı">
+					<h:outputText value="#{isletme.unvan}" />
+				</p:column>						
+			</p:dataTable>
+		</p:panel>
+			
+		<br />
+		
+		<p:panel header="İşletme" rendered="#{sessionObject.isletmeSecildi}">
+			<h:panelGrid columns="1">
+				<h:outputText value="İşletmenizin ünvanı: #{sessionObject.selectedIsletme.unvan} - #{isletmeService.isletmeTipiGetir(sessionObject.selectedIsletme)}" />			
+
+				<h:outputText value="Vergi Dairesi / Vergi No: #{sessionObject.selectedIsletme.vergiDaire} / #{sessionObject.selectedIsletme.vergiNo}" />			
+			</h:panelGrid>
+			
+			<p:commandButton value="ORGANİZASYON YAPISI"
+							action="#{menuService.yonlendir('/menu/organizasyonlar')}"
+							icon="/images/ss_info.png"
+							rendered="#{sessionObject.isletmeSecildi}"
+							/>
+							
+			<br />
+
+			
+			<p:dataTable var="org" 
+						value="#{organizasyonYapisiService.orgList}"
+						id="tblOrg"
+						emptyMessage="Herhangi bir organizasyon kaydınız yok. Tanımlamak için 'ORGANİZASYON YAPISI' butonunu kullanınız."
+			>
+				<f:facet name="header">
+					<h:outputText value="Organizasyonlarınız" />
+				</f:facet>
+				<p:column headerText="Organizasyon Adı">
+					<h:outputText value="#{org.adi}" />
+				</p:column>						
+				<p:column headerText="Organizasyon Amacı">
+					<h:outputText value="#{org.organizasyonTipi}" />
+				</p:column>						
+				<p:column headerText="Başlama-Bitiş Tarihi">
+					<ss:tarihGoster value="#{org.tarihBaslangic}" />
+					<h:outputText value=" - " />
+					<ss:tarihGoster value="#{org.tarihBaslangic}" />
+				</p:column>						
+				<p:column headerText="Genel Durum">
+					<p:dataList value="#{organizasyonYapisiService.orgTesisleriGetir(org)}" var="orgTesis">
+						<h:outputText value="#{orgTesis}"/>
+						<p:dataTable value="#{organizasyonYapisiService.gruplariGetir(orgTesis)}" var="grup">
+							<p:column headerText="Grup">
+								<h:outputText value="#{grup}" />
+							</p:column>
+							<p:column headerText="Üye Sayısı" style="text-align:right">
+								<h:outputText value="#{organizasyonYapisiService.grupUyeSayisiGetir(grup)}" />
+								<f:facet name="footer">
+									<h:outputText value="#{organizasyonYapisiService.orgTesisUyeSayisiGetir(orgTesis)}" />
+								</f:facet>								
+							</p:column>
+						</p:dataTable>
+						<br />
+					</p:dataList>
+				</p:column>						
+			</p:dataTable>
+		</p:panel>
+
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>

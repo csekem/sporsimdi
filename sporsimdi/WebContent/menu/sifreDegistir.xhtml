@@ -1,0 +1,48 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{kullaniciHome.sayfaLoad()}" />
+
+	<h:head>ANASAYFA</h:head>
+
+	<h:form id="form">
+
+    	<p:panel header="Şifre Değiştirme" id="pnlSifre">
+    		<h:panelGrid columns="2" columnClasses="column" cellpadding="5">
+				<h:outputText value="Eski Şifre *"></h:outputText>
+				<p:password id="pswEski"
+							value="#{kullaniciHome.instance.sifre}"
+							required="true" 
+							requiredMessage="Lütfen eski şifrenizi giriniz"></p:password>
+				
+				<h:outputText value="Yeni Şifre *"></h:outputText>
+				<p:password id="pswYeni"
+							value="#{kullaniciHome.sifreYeni}"
+							match="pswTekrar" label="Password Yeni" 
+							required="true" 
+							requiredMessage="Lütfen yeni şifrenizi giriniz"></p:password>
+
+				<h:outputText value="Yeni Şifre (tekrar) *"></h:outputText>
+				<p:password id="pswTekrar"
+							value="#{kullaniciHome.sifreTekrar}"
+							required="true" 
+							requiredMessage="Lütfen yeni şifrenizi tekrar giriniz"></p:password>
+							
+				<p:commandButton value="Vazgeç" id="btnVazgec" action="#{menuService.goToLastScreen()}" process=":form:pnlSifre"/>
+				<p:commandButton value="Değiştir" id="btnDegistir" action="#{kullaniciHome.sifreDegistir()}" />
+				
+			</h:panelGrid>
+			
+   		</p:panel>
+
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>

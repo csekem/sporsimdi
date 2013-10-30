@@ -1,0 +1,133 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<h:head>AİDAT TAKİBİ</h:head>
+		
+	<h:form id="form">
+
+		<p:dataTable id="tblAidatDonem" var="aidatGrup" value="#{aidatService.aidatGruplari}" rowIndexVar="rowAidatGrup">
+			<f:facet name="header">
+				Gruplar
+			</f:facet>
+			
+			<p:columnGroup type="header">
+				<p:row>
+					<p:column headerText="Uye"/>
+				</p:row>
+			</p:columnGroup>
+			
+			<p:subTable value="#{aidatGrup.aidatUyeler}" var="aidatUyeler">
+				<f:facet name="header">
+					#{aidatGrup.grup.adi}
+				</f:facet>				
+
+				<p:column width="100">
+	                <h:outputText value="#{aidatUyeler.uye.adSoyad}"/> 
+				</p:column>
+				<p:columns var="column" value="#{aidatService.columns}" 
+							columnIndexVar="colIndex" 
+							>
+					<f:facet name="header">
+						<h:outputText value="#{column}">
+							<f:convertDateTime type="date"  dateStyle="short" pattern="MMMM yyyy" locale="tr"/>
+						</h:outputText>
+					</f:facet>
+	
+	                <h:outputText value="#{aidatUyeler.aidatlar[0].tahakkukTutar}">
+	         			<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+	                </h:outputText>
+					<br />	                
+	 			</p:columns>
+
+			</p:subTable>
+		
+			<!-- 
+			<p:column headerText="Dönem">
+                <h:outputText value="#{aidatService.uyeler.get(rowIndex).adi}"/> 
+			</p:column>
+			<p:column headerText="Grup">
+                <h:outputText value="#{aidatService.grupListesi.get(rowIndex).adi}"/> 
+			</p:column>
+			<p:column headerText="Üye" width="100">
+                <h:outputText value="#{aidatService.uyeler.get(rowIndex).adSoyad}"/> 
+			</p:column>
+			<p:column width="100">
+	                <h:outputText value="Aidat Tutarı"/> 
+	                <br />
+	                <h:outputText value="Tahsil Edilen"/> 
+	                <br />
+	                <h:outputText value="Kalan Tutar"/> 
+	                <br />
+	                <p:commandButton id="btnAciklama" 
+	                				icon="ui-icon-cart"  
+	                				disabled="true" 
+					/>
+			</p:column>
+			<p:columns var="column" value="#{aidatService.columns}" 
+						columnIndexVar="colIndex" 
+						style="background-color:#{aidat[colIndex].bgColor};text-align:right;"
+						>
+				<f:facet name="header">
+					<h:outputText value="#{column}">
+						<f:convertDateTime type="date"  dateStyle="short" pattern="MMMM yyyy" locale="tr"/>
+					</h:outputText>
+				</f:facet>
+
+	                <h:outputText value="#{aidat[colIndex].tahakkukTutar}">
+	         			<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+	                </h:outputText>
+					<br />	                
+	                <h:outputText value="#{aidat[colIndex].tahsilTutar}">
+	       				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+	       			</h:outputText>
+					<br />	                
+
+	                <h:outputText value="#{aidat[colIndex].kalanTutar}">
+	       				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/> 
+	       			</h:outputText>
+					<br />	                
+
+					<p:commandButton action="#{tahsilatService.yonlendir(aidat[colIndex].tahakkukDetay.id)}"
+									id="modalDialogButton" icon="ui-icon-cart"  
+	                				title="Ödeme Al" disabled="#{aidat[colIndex].tahsilatDetayBak}" 
+					>
+					</p:commandButton>
+
+ 			</p:columns>
+			<p:column headerText="Üye Toplamı"
+						style="text-align:right;"
+			>
+	                <h:outputText value="#{aidatService.uyelerToplam.get(rowIndex).tahakkukTutar}">
+	         			<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+	                </h:outputText>
+	                <br />
+	                <h:outputText value="#{aidatService.uyelerToplam.get(rowIndex).tahsilTutar}">
+	       				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+	       			</h:outputText>
+	                <br />
+	                <h:outputText value="#{aidatService.uyelerToplam.get(rowIndex).kalanTutar}">
+	       				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/> 
+	       			</h:outputText>
+	                <br />
+	                <p:commandButton id="btnUyeToplam" 
+	                				icon="ui-icon-cart"  
+	                				disabled="true" 
+					/>
+			</p:column>
+			 -->
+
+
+		</p:dataTable>		
+
+	</h:form>
+		
+  	</ui:define>
+</ui:composition>
+
+</f:view>

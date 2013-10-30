@@ -1,0 +1,127 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{tesisListesi.sayfaLoad()}" />
+
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+
+	<h:form id="form">
+
+		<p:commandButton value="Yeni Tesis"  action="#{tesisListesi.enableNewerItem()}" update="form" >
+		</p:commandButton>
+		
+		<p:panel id="pnlNewerItem" rendered="#{tesisListesi.newerItem}" header="Yeni Tesis Tanımla">
+			<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+
+				<h:outputLabel for="tesisAdi" value="Tesis Adı"/>
+				<p:inputText id="tesisAdi" 
+							value="#{tesisListesi.instance.adi}" 
+							disabled="#{tesisListesi.deletion}"
+							required="true"
+							requiredMessage="Tesis adı giriniz!"												
+							/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="tesisTipi" value="Tesis Tipi"></h:outputLabel>
+				<p:selectOneMenu id="tesisTipi" value="#{tesisListesi.instance.tesisTipi}"
+								effect="fade" converter="entityConverter"
+								disabled="#{tesisListesi.deletion}"
+								required="true"
+								requiredMessage="Tesis tipi seçiniz!"												
+								>
+					<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+					<f:selectItems value="#{tesisTipiService.tesisTipiListesi}"
+						var="tip" itemLabel="#{tip.adi}" itemValue="#{tip}" />
+				</p:selectOneMenu>
+				<h:outputText value="" />
+
+				<h:outputLabel for="yuzOlcum" value="Yüz Ölçümü (m2)"></h:outputLabel>
+				<p:inputText id="yuzOlcum" value="#{tesisListesi.instance.yuzOlcumM2}" disabled="#{tesisListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="sahalar" value="Tesisteki Sahalar"></h:outputLabel>
+				<p:dataList value="#{tesisListesi.instance.sahaListesi}" var="saha">
+					<h:outputText value="#{sahaService.sahaUzunAciklamasi(saha)}"/>
+				</p:dataList>
+				<p:commandButton value="Sahalar" action="#{sahaService.yonlendir(tesisListesi.instance.id)}" >
+				</p:commandButton>
+
+				<p:commandButton value="Vazgeç"
+								id="btnVazgec" 
+								action="#{tesisListesi.disableNewerItem()}"
+								update=":form"
+								process="@this"
+								/>
+				<p:commandButton value="#{tesisListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								id="btnKaydet" 
+								action="#{tesisListesi.save()}"
+								update=":form"
+								rendered="#{!tesisListesi.deletion}"/>
+				<p:commandButton value="Sil"
+								id="btnSil" 
+								action="#{tesisListesi.delete()}"
+								update=":form"
+								rendered="#{tesisListesi.deletion}"/>
+				<h:outputText value="" />
+
+			</p:panelGrid>
+		</p:panel>
+
+		<p:dataTable var="tesis" 
+					value="#{tesisListesi.list}"
+					id="tblTesis"
+					emptyMessage="İşletmenize ait tesis bulunamadı. Yeni Tesis butonu ile ekleyebilirsiniz."
+					>
+			<f:facet name="header">
+				Tesisler
+			</f:facet>
+
+			<p:column headerText="Tesis Adı">
+				<h:outputText value="#{tesis.adi}" />
+			</p:column>
+			
+			<p:column headerText="Tesis Tipi">
+				<h:outputText value="#{tesis.tesisTipi.adi}">
+				</h:outputText>
+			</p:column>
+
+			<p:column headerText="Yüz Ölçüm (m2)" style="text-align:right;">
+				<h:outputText value="#{tesis.yuzOlcumM2}">
+					<f:convertNumber type="number" />
+				</h:outputText>
+			</p:column>
+			
+			<p:column headerText="Tesisteki Sahalar">
+				<p:dataList value="#{tesis.sahaListesi}" var="saha">
+					<h:outputText value="#{sahaService.sahaKisaAciklamasi(saha)}"/>
+				</p:dataList>
+				<p:commandButton value="Sahalar" action="#{sahaService.yonlendir(tesis.id)}" >
+				</p:commandButton>
+			</p:column>
+
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{tesisListesi.updateInstance(tesis)}" update=":form">
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{tesisListesi.deleteInstance(tesis)}" update=":form">
+				</p:commandButton>
+			</p:column>	
+
+		</p:dataTable>
+
+		<p:commandButton value="Kapat"
+						id="btnKapat" 
+						action="#{menuService.goToLastScreen()}"/>
+
+
+	</h:form>
+
+    </ui:define>
+</ui:composition>
+
+</f:view>

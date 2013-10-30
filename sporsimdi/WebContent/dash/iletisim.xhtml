@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:composite="http://java.sun.com/jsf/composite"
+	xmlns:p="http://primefaces.org/ui">
+		
+
+	<!-- INTERFACE -->
+	<composite:interface>
+		<composite:attribute name="modelId" type="java.lang.Long"></composite:attribute>
+		<composite:attribute name="save" type="boolean"></composite:attribute>
+	</composite:interface>
+
+	<!-- IMPLEMENTATION -->
+	<composite:implementation>
+	<h:form id="formIletisim">
+		<f:event type="preRenderView" listener="#{adresService.initialize(cc.attrs.modelId, cc.attrs.save)}" />
+		<f:event type="preRenderView" listener="#{telefonService.initialize(cc.attrs.modelId, cc.attrs.save)}" />
+		<f:event type="preRenderView" listener="#{webIletisimService.initialize(cc.attrs.modelId, cc.attrs.save)}" />
+	
+		<h:messages errorClass="error"/>
+
+		<p:panelGrid columns="3" styleClass="grid">
+
+			<p:panel>
+				<p:commandButton value="Yeni Adres"  action="#{tesisListesi.enableNewerItem()}" update="form" >
+				</p:commandButton>
+
+				<p:dataTable value="#{adresService.adresListesi}" var="adres" id="tblAdres">
+					<p:column headerText="ADRESLER">
+						<h:outputText value="#{adres.adresTipi} - " />
+						<h:outputText value="#{adres.adres}, " />
+						<h:outputText value="#{adres.mahalle} Mah. "/>
+						<h:outputText value="#{adres.semt}, "/>
+						<h:outputText value="#{adres.ilce.adi} / "/>
+						<h:outputText value="#{adres.il.adi} "/>
+						<h:outputText value="( #{adres.postaKodu} )"/>
+					</p:column>
+					<p:column>
+						<p:commandButton value="Düzenle"	
+										action="#{adresService.adresDuzenle(adres)}" 
+										process=":form:spor:formIletisim" 
+										update=":form:spor:formIletisim:tblAdres,:form:spor:formIletisim:gridAdres">
+						</p:commandButton>
+						<p:commandButton value="Sil"	
+										action="#{adresService.adresSil(adres)}" 
+										process=":form:spor:formIletisim" 
+										update=":form:spor:formIletisim:tblAdres,:form:spor:formIletisim:gridAdres">
+						</p:commandButton>
+					</p:column>
+				</p:dataTable>
+				<br/>
+				<p:panelGrid columns="4" styleClass="grid" id="gridAdres">
+					<h:outputLabel for="adresAdresTipi" value="Adres Tipi"></h:outputLabel>
+					<p:selectOneMenu id="adresAdresTipi" value="#{adresService.adres.adresTipi}">
+						<f:selectItems value="#{adresService.adresTipiListesi}"	var="adresTipi" itemLabel="#{adresTipi}" itemValue="#{adresTipi}"/>
+					</p:selectOneMenu>
+					
+					<h:outputLabel for="adresAdres" value="Adres"></h:outputLabel>
+					<p:inputText id="adresAdres" value="#{adresService.adres.adres}">
+					</p:inputText>
+
+					<h:outputLabel for="adresIl" value="İl"></h:outputLabel>
+					<p:selectOneMenu id="adresIl" value="#{adresService.adres.il}" converter="entityConverter">
+						<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+						<f:selectItems value="#{ilIlceService.ilListesi}" var="il" itemLabel="#{il.adi}" itemValue="#{il}"/>
+						<p:ajax update=":form:spor:formIletisim:adresIlce" listener="#{ilIlceService.ilSecildi(adresService.adres.il)}"></p:ajax>
+					</p:selectOneMenu>
+
+					<h:outputLabel for="adresMahalle" value="Mahalle"></h:outputLabel>
+					<p:inputText id="adresMahalle" value="#{adresService.adres.mahalle}">
+					</p:inputText>
+
+					<h:outputLabel for="adresIlce" value="İlce"></h:outputLabel>
+					<p:selectOneMenu id="adresIlce" value="#{adresService.adres.ilce}" converter="entityConverter">
+						<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+						<f:selectItems value="#{ilIlceService.ilceListesi}" var="ilce" itemLabel="#{ilce.adi}" itemValue="#{ilce}"/>									
+					</p:selectOneMenu>
+
+					<h:outputLabel for="adresSemt" value="Semt"></h:outputLabel>
+					<p:inputText id="adresSemt" value="#{adresService.adres.semt}">
+					</p:inputText>
+
+					<h:outputLabel for="adresPostaKodu" value="Posta Kodu"></h:outputLabel>
+					<p:inputText id="adresPostaKodu" value="#{adresService.adres.postaKodu}">
+					</p:inputText>
+
+					<p:commandButton value="Adres Ekle"
+									actionListener="#{adresService.adresEkle()}" 
+									process=":form:spor:formIletisim" 
+									update=":form:spor:formIletisim:tblAdres,:form:spor:formIletisim:gridAdres">
+					</p:commandButton>
+				</p:panelGrid>
+			
+			</p:panel>
+
+			<p:panel>
+				<p:dataTable value="#{telefonService.telefonListesi}" var="tel" id="tblTelefon">
+					<p:column headerText="TELEFONLAR">
+						<h:outputText value="#{tel.telefonTipi} - " />
+						<h:outputText value="#{tel.telefon}" />
+					</p:column>
+					<p:column>
+						<p:commandButton value="Düzenle"
+										action="#{telefonService.telefonDuzenle(tel)}" 
+										process=":form:spor:formIletisim" 
+										update=":form:spor:formIletisim:tblTelefon,:form:spor:formIletisim:gridTelefon">
+						</p:commandButton>
+						<p:commandButton value="Sil"	
+										action="#{telefonService.telefonSil(tel)}" 
+										process=":form:spor:formIletisim" 
+										update=":form:spor:formIletisim:tblTelefon,:form:spor:formIletisim:gridTelefon">
+						</p:commandButton>
+					</p:column>
+				</p:dataTable>
+				<br/>
+				<p:panelGrid columns="2" styleClass="grid" id="gridTelefon">
+					<h:outputLabel for="telTelefonTipi" value="Telefon Tipi"></h:outputLabel>
+					<p:selectOneMenu id="telTelefonTipi" value="#{telefonService.telefon.telefonTipi}">
+						<f:selectItems value="#{telefonService.telefonTipiListesi}" var="telefonTipi" itemLabel="#{telefonTipi}" itemValue="#{telefonTipi}"/>
+					</p:selectOneMenu>
+					
+					<h:outputLabel for="telTelefon" value="Telefon"></h:outputLabel>
+					<p:inputText id="telTelefon" value="#{telefonService.telefon.telefon}">
+					</p:inputText>
+
+					<p:commandButton value="Telefon Ekle"
+									action="#{telefonService.telefonEkle()}" 
+									process=":form:spor:formIletisim" 
+									update=":form:spor:formIletisim:tblTelefon,:form:spor:formIletisim:gridTelefon">
+					</p:commandButton>
+				</p:panelGrid>
+			</p:panel>
+			
+			<p:panel>
+				<p:dataTable value="#{webIletisimService.webIletisimListesi}" var="web" id="tblWeb">
+					<p:column headerText="SOSYAL MEDYA">
+						<h:outputText value="#{web.webIletisimTipi} - " />
+						<h:outputText value="#{web.webIletisim}" />
+					</p:column>
+					<p:column>
+						<p:commandButton value="Düzenle"
+										action="#{webIletisimService.webIletisimDuzenle(web)}" 
+										process=":form:spor:formIletisim" 
+										update=":form:spor:formIletisim:tblWeb,:form:spor:formIletisim:gridWeb">
+						</p:commandButton>
+						<p:commandButton value="Sil"	
+										action="#{webIletisimService.webIletisimSil(web)}" 
+										process=":form:spor:formIletisim" 
+										update=":form:spor:formIletisim:tblWeb,:form:spor:formIletisim:gridWeb">
+						</p:commandButton>
+					</p:column>
+				</p:dataTable>
+				<br/>
+				<p:panelGrid columns="2" styleClass="grid" id="gridWeb">
+					<h:outputLabel for="webIletisimTipi" value="Sosyal Medya Tipi"></h:outputLabel>
+					<p:selectOneMenu id="webIletisimTipi" value="#{webIletisimService.webIletisim.webIletisimTipi}">
+						<f:selectItems value="#{webIletisimService.webIletisimTipiListesi}" var="webTipi" itemLabel="#{webTipi}" itemValue="#{webTipi}"/>
+					</p:selectOneMenu>
+					
+					<h:outputLabel for="webWeb" value="Değeri"></h:outputLabel>
+					<p:inputText id="webWeb" value="#{webIletisimService.webIletisim.webIletisim}">
+					</p:inputText>
+
+					<p:commandButton value="Sosyal Medya Ekle"
+									action="#{webIletisimService.webIletisimEkle()}" 
+									process=":form:spor:formIletisim" 
+									update=":form:spor:formIletisim:tblWeb,:form:spor:formIletisim:gridWeb">
+					</p:commandButton>
+				</p:panelGrid>
+			</p:panel>
+
+		</p:panelGrid>			
+	
+	</h:form>
+	
+	</composite:implementation>
+
+</html>

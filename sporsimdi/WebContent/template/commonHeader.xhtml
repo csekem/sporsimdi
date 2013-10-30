@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"	  
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<h:body>
+
+	<ui:composition>
+	<h:form id="menuForm">
+	
+		<!-- ÜST MENU -->
+		<p:toolbar>
+			<p:toolbarGroup >
+				<p:commandButton value="ANASAYFA"
+								action="#{menuService.yonlendir('/menu/anasayfa')}"
+									icon="/images/ss_homepage.png"
+								>
+				</p:commandButton>
+				<p:commandButton value="BİLGİLERİM"
+								action="#{menuService.yonlendir('/menu/bilgilerim')}"
+									icon="/images/ss_info.png"
+								>
+				</p:commandButton>
+				
+				<p:menubar model="#{menuService.menuModel}"/>
+			</p:toolbarGroup>
+			
+			<p:toolbarGroup align="right">
+				<h:outputText value="[Kullanıcı: #{sessionObject.kullanici.kullanici}] "/>			
+				<h:outputText value="[İşletme: #{sessionObject.selectedIsletme.unvan}] " rendered="#{sessionObject.isletmeSecildi}"/>			
+				<p:commandButton value="YÖNETİM EKRANLARI"
+								action="#{menuService.yonlendir('/admin/yonetim')}"
+								icon="/images/ss_yonetim.png" 
+								rendered="#{sessionObject.rol.rol.equals('admin')}"
+								>
+				</p:commandButton>
+				<p:commandButton value="ÇIKIŞ"
+								action="#{menuService.yonlendir('/menu/cikis')}"
+								icon="/images/ss_exit.png"
+								>
+				</p:commandButton>
+			</p:toolbarGroup>
+
+		</p:toolbar>
+		
+		<h5>
+			<h:outputText value="İşlem Yapılan Organizasyon: [#{sessionObject.selectedOrganizasyon.adi}]" 
+							rendered="#{(sessionObject.selectedOrganizasyon != null) and (menuService.subMenuType.equals('ORGANIZASYON'))}"
+							style="color:red"/>			
+		</h5>
+		
+		<!-- ORGANİZASYON MENÜLERİ -->
+		<p:tabMenu rendered="#{menuService.subMenuType.equals('ORGANIZASYON')}"
+					model="#{menuService.organizasyonMenuModel}"
+					activeIndex="-1"
+					>
+		</p:tabMenu>
+
+		<!-- YÖNETİM MENU -->
+		<p:tabMenu rendered="#{menuService.subMenuType.equals('YONETIM')}">
+			<p:menuitem id="menuKullanicilar"
+						value="KULLANICILAR"
+						url="/admin/kullanicilar.jsf"
+						icon="/images/ss_kullanicilar.png"
+						style="background-color:purple;color:white"
+						>
+			</p:menuitem>			
+		</p:tabMenu>
+
+	</h:form>
+	
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+	
+	</ui:composition>
+</h:body>
+
+</html>

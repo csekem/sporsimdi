@@ -1,0 +1,184 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"	
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<h:outputText value="ÜRÜNLER" style="color:red"/>
+	</h:head>
+		
+
+	<h:form id="form" enctype="multipart/form-data">
+						     
+    		<p:tree value="#{urunListesi.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{urunListesi.selectedNode}"
+				>
+			<p:ajax event="select" update=":form" listener="#{urunListesi.onNodeSelect}"/>	
+				<p:treeNode>
+					<h:outputText value="#{node}" />
+				</p:treeNode>
+		</p:tree>
+ 
+ 		<br />
+
+		<p:panel id="pnlPanel">
+
+			<p:commandButton value="ÜRÜN ÖNERİLERİ AL" onclick="dlgOner.show()"/>
+			<p:commandButton value="ÜRÜNLERİN SIRASINI DÜZENLE" onclick="dlgSira.show()"/>
+			
+			<p:panel id="pnlUrun">
+							
+				<p:commandButton value="Yeni Ürün"  action="#{urunListesi.enableNewerItem()}" update=":form" >
+				</p:commandButton>
+		
+				<p:panel id="pnlNewerItem" rendered="#{urunListesi.newerItem}" header="Yeni Ürün Tanımla">
+					<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+		
+						<h:outputLabel for="urunAdi" value="Ürün Adı"/>
+						<p:inputText id="urunAdi" 
+									value="#{urunListesi.instance.adi}" 
+									disabled="#{urunListesi.deletion}"
+									required="true"
+									requiredMessage="Ürün adı giriniz!"												
+									/>
+						<h:outputText value="" />
+		
+						<h:outputLabel for="urunResim" value="Ürün Resmi"/>
+						<p:fileUpload id="urunResim" value="#{urunListesi.uploadedFile}"
+									mode="advanced" sizeLimit="100000"  
+									cancelLabel="İptal" uploadLabel="Yükle" label="Seç" fileUploadListener="#{urunListesi.uploadFile}"
+									update=":form:urunImage"
+									disabled="#{urunListesi.deletion}"
+									allowTypes="/(\.|\/)(gif|jpe?g|png)$/" />
+						<h:outputText value="" />
+						
+						<h:outputLabel for="urunImage" value="Ürün Resmi"/>
+						<p:graphicImage id="urunImage" value="/image?id=0" width="50" height="50">
+						</p:graphicImage>
+						<h:outputText value="" />
+
+ 						<h:outputLabel for="urunSatisFiyat" value="Satış Fiyatı"></h:outputLabel>
+						<h:inputText id="urunSatisFiyat" value="#{urunListesi.instance.satisFiyat}" disabled="#{urunListesi.deletion}"/>
+						<h:outputText value="" />
+
+						<p:commandButton value="Vazgeç"
+										id="btnVazgec" 
+										action="#{urunListesi.disableNewerItem()}"
+										update=":form"
+										process="@this"
+										/>
+						<p:commandButton value="#{urunListesi.managed ? 'Güncelle' : 'Kaydet'}"
+										id="btnKaydet" 
+										action="#{urunListesi.save()}"
+										update=":form"
+										ajax="false"
+										rendered="#{!urunListesi.deletion}"/>
+						<p:commandButton value="Sil"
+										id="btnSil" 
+										action="#{urunListesi.delete()}"
+										update=":form"
+										rendered="#{urunListesi.deletion}"/>
+						<h:outputText value="" />
+		
+					</p:panelGrid>
+				</p:panel>
+
+				<p:dataTable value="#{urunListesi.list}" var="urun" id="tblUrun">
+					<p:column headerText="Sıra">
+						<h:outputText value="#{urun.sira}" />
+					</p:column>
+					<p:column headerText="Resim">
+						<p:graphicImage id="urunImage" value="/image?id=#{urun.id}" width="50" height="50">
+						</p:graphicImage>
+					</p:column>				
+					<p:column headerText="Ürün">
+						<h:outputText value="#{urun.adi}" />
+					</p:column>
+					<p:column headerText="Satış Fiyatı">
+						<ss:paraGoster value="#{urun.satisFiyat}" decimal="true"/>
+					</p:column>
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{urunListesi.updateInstance(urun)}" update=":form">
+						</p:commandButton>
+						<p:commandButton value="Sil" action="#{urunListesi.deleteInstance(urun)}" update=":form">
+						</p:commandButton>
+					</p:column>	
+
+				</p:dataTable>
+			</p:panel>
+
+		</p:panel>
+		
+		<p:dialog widgetVar="dlgOner" modal="true" id="dlg" header="ÜRÜN ÖNERİLERİ">
+			<p:pickList id="pickUrun" value="#{urunListesi.urunOneriler}" var="oneri" 
+						itemValue="#{oneri}" itemLabel="#{oneri.adi}" converter="primeFacesPickListConverter"
+						showSourceControls="true" showTargetControls="true" showCheckbox="true"
+						showSourceFilter="true" showTargetFilter="true" filterMatchMode="contains" 
+			>
+				<f:facet name="sourceCaption">Öneriler</f:facet>
+				<f:facet name="targetCaption">Ürünler</f:facet>
+				
+				<p:column style="width:25%">
+					<p:graphicImage value="/image?id=#{oneri.id}" width="30" height="30"></p:graphicImage>
+				</p:column>
+				<p:column style="width:75%">
+					<h:outputText value="#{oneri.adi}" />
+				</p:column>			
+			</p:pickList>
+			
+		 	<p:commandButton value="ONAYLA" action="#{urunListesi.oneriOnayla()}" 
+		 					oncomplete="dlgOner.hide()" update=":form:tblUrun"
+		 					>
+		 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+		 	</p:commandButton>
+		 	<p:commandButton value="KAPAT"  
+		 					oncomplete="dlgOner.hide()" update=":form"
+		 					/>
+			
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgSira" modal="true" id="dlgSira" header="ÜRÜNLERİN SIRASI">
+			<p:orderList value="#{urunListesi.list}" var="urun" itemValue="#{urun}" 
+						converter="primeFacesOrderListConverter" id="listUrun" controlsLocation="left"
+						rendered="#{urunListesi.list != null}">
+				<f:facet name="caption">Ürünler</f:facet>  
+
+				<p:column style="width:25%">
+					<p:graphicImage value="/image?id=#{urun.id}" width="30" height="30"></p:graphicImage>
+				</p:column>				
+				<p:column style="width:75%">
+					#{urun.adi}
+				</p:column>
+
+			</p:orderList>
+			
+		 	<p:commandButton value="ONAYLA" action="#{urunListesi.siraDegistir()}" 
+		 					oncomplete="dlgSira.hide()" update=":form:tblUrun"
+		 					>
+		 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+		 	</p:commandButton>
+		 	<p:commandButton value="KAPAT"  
+		 					oncomplete="dlgSira.hide()" update=":form:tblUrun"
+		 					/>
+			
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+		
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

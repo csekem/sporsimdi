@@ -1,0 +1,51 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{tarifeHome.sayfaLoad}" />
+
+	<f:loadBundle basename="#{sessionObject.labelsProperties}" var="labels"/>
+
+	<h:head>Tarife Tanımlama Ekranı</h:head>
+
+	<h:form id="form">
+		<h:panelGrid columns="2">
+				
+			<h:outputText value="#{labels.donem}"></h:outputText>
+			<h:outputText id="donemAdi" value="#{tarifeHome.donem.adi}"/>
+		
+			<h:outputText for="tarifeTaksitTutar" value="Taksit Tutarı"></h:outputText>
+			<p:inputText id="tarifeTaksitTutar" value="#{tarifeHome.instance.taksitTutar}">
+				<p:ajax event="keyup" update=":form:tarifeToplamTutar"></p:ajax>
+			</p:inputText>
+
+			<h:outputText for="tarifeTaksitSayisi" value="Taksit Sayısı"></h:outputText>
+			<p:inputText id="tarifeTaksitSayisi" value="#{tarifeHome.instance.taksitSayisi}" >
+				<p:ajax event="keyup" listener="#{tarifeHome.fixByTaksitTutar()}" update="tarifeToplamTutar" ></p:ajax>
+			</p:inputText>
+			
+			<h:outputText for="tarifeToplamTutar" value="Toplam Tutar"></h:outputText>
+			<h:outputText id="tarifeToplamTutar" value="#{tarifeHome.instance.toplamTutar}">
+			</h:outputText>
+
+			<h:outputText for="krediKartlimi" value="Kredi Kartlı Mı? :"></h:outputText>
+			<p:selectBooleanButton id="krediKartlimi" value="#{tarifeHome.instance.krediKartlimi}" onLabel="EVET" offLabel="HAYIR"/>
+
+			<p:commandButton value="Vazgeç"
+							id="vazgecButton" action="#{menuService.goToLastScreen()}"/>
+			<p:commandButton value="Kaydet" id="kaydetButton"
+							action="#{tarifeHome.save}" />
+
+		</h:panelGrid>
+
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

@@ -1,0 +1,44 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+	
+	<p:panel header="GENEL BİLGİLER" id="pnlGenel">
+
+		<p:panelGrid columns="2" columnClasses="label, value" styleClass="grid">
+			<p:outputLabel for="uyeAd" value="#{labels.uye} Adı"/>
+			<p:inputText id="uyeAd" value="#{uyeHome.instance.ad}" 
+						required="true" requiredMessage="#{labels.uye} Adı giriniz!">
+			</p:inputText>
+
+			<p:outputLabel for="uyeSoyad" value="Üye Soyadı" />
+			<p:inputText id="uyeSoyad" value="#{uyeListesi.instance.soyad}" 
+						required="true" requiredMessage="#{labels.uye} Soyadı giriniz!">
+			</p:inputText>
+
+			<p:outputLabel for="uyeTC" value="Üye TC Kimlik No" />
+			<p:inputText id="uyeTC" value="#{uyeListesi.instance.tcKimlikNo}"></p:inputText>
+
+			<p:outputLabel for="dogumTarihi" value="Doğum Tarihi" />
+			<p:calendar id="dogumTarihi"
+						value="#{uyeListesi.instance.dogumTarihi}" pattern="dd/MM/yyyy"  
+						navigator="true" showOtherMonths="true" yearRange="c-75:c"
+						required="true" requiredMessage="Doğum Tarihi giriniz!"/>
+
+			<p:outputLabel for="cinsiyet" value="Cinsiyet" />
+			<p:selectOneMenu id="cinsiyet"
+							value="#{uyeListesi.instance.cinsiyet}" effect="fade" 
+							required="true" requiredMessage="Cinsiyet giriniz!">
+				<f:selectItem itemLabel="Seçiniz" itemValue="" />
+				<f:selectItems value="#{cinsiyetService.cinsiyetListesi}"
+					var="cinsiyet" itemLabel="#{cinsiyet}"
+					itemValue="#{cinsiyet}" />
+			</p:selectOneMenu>
+		</p:panelGrid>
+	
+	</p:panel>
+					
+</f:view>

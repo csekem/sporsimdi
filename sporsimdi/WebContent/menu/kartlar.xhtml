@@ -1,0 +1,213 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"	
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<h:outputText value="KARTLAR" style="color:red"/>
+	</h:head>
+		
+	<h:form id="form">
+
+ 		<p:tree value="#{kartDurumListesi.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{kartDurumListesi.selectedNode}"
+				>
+			<p:ajax event="select" update=":form" listener="#{kartDurumListesi.onNodeSelect}"/>	
+			<p:treeNode>
+				<h:outputText value="#{node}" />
+			</p:treeNode>
+		</p:tree>
+
+		<p:panel id="pnlKart">
+						
+			<p:panel id="pnlNewerItem" rendered="#{kartDurumListesi.newerItem}" header="Yeni Kart Tanımla">
+				<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+	
+					<p:outputLabel for="kartNo" value="Kart No"/>
+					<h:outputText id="kartNo" value="#{kartDurumListesi.instance.qrcard.no}" />
+					
+					<ui:remove>
+					<p:selectOneMenu id="kartNo" 
+								value="#{kartDurumListesi.instance.qrcard}"
+								var="qr"
+								disabled="#{kartDurumListesi.deletion}"
+								required="true"
+								requiredMessage="Kart No seçiniz!"	
+								converter="entityConverter"
+								>
+						<f:selectItem itemLabel="Bir Kart No Seçiniz" itemValue="0"/>
+						<f:selectItems value="#{qrcardService.qrcardListForUse}" var="qrcard" itemLabel="#{qrcard.no}" itemValue="#{qrcard}"/>
+						<p:column>
+							<h:outputText value="#{qr.no}" />
+						</p:column>
+					</p:selectOneMenu>
+					</ui:remove>
+					
+					<p:outputLabel for="kartDurum" value="Kart Durumu"/>
+					<h:outputText id="kartDurum" value="#{kartDurumListesi.instance.kartStatus}" />
+
+					<p:outputLabel for="kartUye" value="Üye"/>
+					<p:selectOneMenu id="kartUye" 
+								value="#{kartDurumListesi.instance.kart.uye}"
+								var="u" 
+								disabled="#{kartDurumListesi.deletion}"
+								required="true"
+								requiredMessage="Üye seçiniz!"	
+								converter="entityConverter"
+								filter="true"
+								filterMatchMode="startsWith"											
+								>
+						<f:selectItem itemLabel="Bir Üye Seçiniz" itemValue="0"/>
+						<f:selectItems value="#{uyeService.isletmeUyeler}" var="uye" itemLabel="#{uye.adSoyad}" itemValue="#{uye}"/>
+						<p:column>
+							<h:outputText value="#{u.adSoyad}" />
+						</p:column>
+					</p:selectOneMenu>
+		
+					<h:outputLabel for="kartBakiye" value="Bakiye"/>
+					<p:inputText id="kartBakiye" value="#{kartDurumListesi.instance.kart.bakiye}" disabled="#{kartDurumListesi.deletion}"/>
+
+					<h:outputLabel for="kartDepozito" value="Depozito"></h:outputLabel>
+					<p:inputText id="kartDepozito" value="#{kartDurumListesi.instance.kart.depozito}" disabled="#{kartDurumListesi.deletion}"/>
+
+					<h:outputLabel for="kartBonus" value="Bonus"></h:outputLabel>
+					<p:inputText id="kartBonus" value="#{kartDurumListesi.instance.kart.bonus}" disabled="#{kartDurumListesi.deletion}"/>
+
+					<h:outputLabel for="kartKredi" value="Kredi"></h:outputLabel>
+					<p:inputText id="kartKredi" value="#{kartDurumListesi.instance.kart.kredi}" disabled="#{kartDurumListesi.deletion}"/>
+
+					<p:commandButton value="Vazgeç"
+									id="btnVazgec" 
+									action="#{kartDurumListesi.disableNewerItem()}"
+									update=":form"
+									process="@this"
+									/>
+					<p:commandButton value="#{kartDurumListesi.managed ? 'Güncelle' : 'Kaydet'}"
+									id="btnKaydet" 
+									action="#{kartDurumListesi.save()}"
+									update=":form"
+									rendered="#{!kartDurumListesi.deletion}"/>
+					<p:commandButton value="Sil"
+									id="btnSil" 
+									action="#{kartDurumListesi.delete()}"
+									update=":form"
+									rendered="#{kartDurumListesi.deletion}"/>	
+				</p:panelGrid>
+			</p:panel>
+
+			<p:dataTable value="#{kartDurumListesi.list}" var="kartDurum" id="tblKartDurum">
+
+				<p:column headerText="Düzenle">
+					<p:commandButton value="Kart Aç" action="#{kartDurumListesi.updateInstance(kartDurum)}" update=":form:pnlKart" disabled="#{!kartDurum.kartStatus.i18nKey.equals('kartStatus.yeni')}"/>
+					<p:commandButton value="Kart Kapat" action="#{kartDurumListesi.deleteInstance(kartDurum)}" update=":form:pnlKart" disabled="#{!kartDurum.kartStatus.i18nKey.equals('kartStatus.acik')}"/>
+				</p:column>	
+
+				<p:column headerText="Kart No">
+					<h:outputText value="#{kartDurum.qrcard.no}" />
+				</p:column>
+				<p:column headerText="Durum">
+					<h:outputText value="#{kartDurum.kartStatus}" />
+				</p:column>
+				<p:column headerText="Üye">
+					<h:outputText value="#{kartDurum.kart.uye.adSoyad}" />
+				</p:column>				
+				<p:column headerText="Bakiye">
+					<ss:paraGoster value="#{kartDurum.kart.bakiye}" decimal="true"/>
+					<p:spacer height="0" width="10"/>
+					<p:commandLink value="Para Yükle" 
+									disabled=""
+									action="#{kartDurumListesi.paraYukleEkranAc(kartDurum)}" 
+									id="btnParaYukle" 
+									update=":form:pnlIslem" 
+									process=":form:tblKartDurum"
+									oncomplete="dlgIslem.show()" 
+									style="color:red"/>  
+					<p:spacer width="20"/>
+					<p:commandLink value="Para İade" 
+									disabled=""
+									action="#{kartDurumListesi.paraIadeEkranAc(kartDurum)}" 
+									id="btnParaIade" 
+									update=":form:pnlIslem" 
+									process=":form:tblKartDurum"
+									oncomplete="dlgIslem.show()" 
+									style="color:red"/>  
+				</p:column>
+				<p:column headerText="Depozito">
+					<ss:paraGoster value="#{kartDurum.kart.depozito}" decimal="true"/>
+				</p:column>
+				<p:column headerText="Bonus">
+					<ss:paraGoster value="#{kartDurum.kart.bonus}" decimal="true"/>
+				</p:column>
+				<p:column headerText="Kredi">
+					<ss:paraGoster value="#{kartDurum.kart.kredi}" decimal="true"/>
+				</p:column>
+			</p:dataTable>
+		</p:panel>
+
+		
+		<p:dialog widgetVar="dlgIslem" modal="true" id="dlgIslem" header="#{kartDurumListesi.islemHeader}">
+		
+			<p:panelGrid id="pnlIslem" columns="2">
+				<p:outputLabel for="kartNoIslem" value="Kart No"/>
+				<h:outputText id="kartNoIslem" value="#{kartDurumListesi.selectedKartDurum.qrcard.no}" />
+
+				<p:outputLabel for="kartDurumIslem" value="Kart Durumu"/>
+				<h:outputText id="kartDurumIslem" value="#{kartDurumListesi.selectedKartDurum.kartStatus}" />
+
+				<p:outputLabel for="kartUyeIslem" value="Üye"/>
+				<h:outputText id="kartUyeIslem" value="#{kartDurumListesi.selectedKart.uye.adSoyad}" />
+
+				<h:outputText value="" />
+				<h:outputText value="" />
+
+				<h:outputText value="#{kartDurumListesi.islemMevcutLabel}"/>
+				<h:outputText value="#{kartDurumListesi.islemMevcutValue}"/>
+
+				<h:outputText value="#{kartDurumListesi.islemEklenenLabel}" style="color:red"/>
+				<p:inputText value="#{kartDurumListesi.islemEklenenValue}" style="color:red">
+					<p:ajax event="keyup" 
+							listener="#{kartDurumListesi.islemTutarBelirle()}" 
+							update=":form:islemSon"
+							process="@this"
+							/>
+				</p:inputText>
+
+				<h:outputText value="#{kartDurumListesi.islemSonLabel}" />
+				<h:outputText id="islemSon" value="#{kartDurumListesi.islemSonValue}"/>
+
+			 	<p:commandButton value="KAPAT"  
+			 					oncomplete="dlgIslem.hide()" 
+			 					update=":form:tblKartDurum"
+			 					process="@this"
+			 					/>
+			 	<p:commandButton value="#{kartDurumListesi.islemLabel}" 
+			 					action="#{kartDurumListesi.islemYap()}" 
+			 					oncomplete="dlgIslem.hide()" 
+			 					process="@this"
+			 					update=":form:tblKartDurum"
+			 					>
+			 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+			 	</p:commandButton>
+			 	
+			</p:panelGrid>
+		</p:dialog>
+
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+		
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

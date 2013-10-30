@@ -1,0 +1,21 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+	<h:head>GİRİŞ SAYFASI</h:head>
+
+	<h:form id="form">
+
+    	<p:panel>
+    		<h:panelGrid columns="2" columnClasses="column" cellpadding="5">
+				<h:outputText value="Merhaba"></h:outputText>
+			</h:panelGrid>
+			
+			<p:commandButton value="GİRİŞ" action="menu/anasayfa?faces-redirect=true"></p:commandButton>
+   		</p:panel>
+
+	</h:form>
+
+</f:view>

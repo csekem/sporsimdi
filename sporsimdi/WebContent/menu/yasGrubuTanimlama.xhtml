@@ -1,0 +1,40 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+	
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{yasGrubuHome.sayfaLoad}" />
+
+	<h:head>Yaş Grubu Tanımlama Ekranı</h:head>
+	
+	<h:form>
+		<p:panelGrid columns="2" >
+			
+			<p:outputLabel for="yasGrubuAdi" value="Yaş Grubu Adı"/>
+			<p:inputText id="yasGrubuAdi" value="#{yasGrubuHome.instance.adi}"/>
+			
+			<p:outputLabel for="baslangicYas" value="Başlangıç Yaşı"/>
+			<p:inputMask id="baslangicYas" value="#{yasGrubuHome.instance.baslangicYili}" mask="9999"/>
+			
+			<p:outputLabel for="bitisYas" value="Bitiş Yaşı"/>
+			<p:inputMask id="bitisYas" value="#{yasGrubuHome.instance.bitisYili}" mask="9999"/>		
+
+			<p:commandButton value="Vazgeç"
+							id="vazgecButton" 
+							action="#{menuService.goToLastScreen()}"/>
+			<p:commandButton value="Kaydet" 
+							id="kaydetButton"
+							action="#{yasGrubuHome.save}" />
+
+		</p:panelGrid>
+
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

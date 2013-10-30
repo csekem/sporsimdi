@@ -1,0 +1,516 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"	
+	contentType="text/html">
+	
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:loadBundle basename="com.sporsimdi.resources.okul" var="labels"/>
+	<f:event type="preRenderView" listener="#{organizasyonService.sayfaLoad}" />
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<h:outputText value="ÜYELER" style="color:red"/>
+		<style type="text/css">
+			.ui-widget-content .ui-datalist-content{
+				border: none;
+				background: transparent;
+				background-image: none;
+			}
+		</style>	
+	</h:head>
+
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+	
+	<h:form id="form">	
+
+ 		<p:tree value="#{organizasyonService.root}" var="node" id="tree"
+				dynamic="true" cache="false" orientation="horizontal"
+				selectionMode="single" selection="#{organizasyonService.selectedNode}"
+				>
+			<p:ajax event="select" update=":form" listener="#{organizasyonService.onNodeSelect}"/>	
+				<p:treeNode>
+					<h:outputText value="#{node}" />
+				</p:treeNode>
+		</p:tree>
+ 
+ 		<br />
+ 
+		<ui:remove>-----------------------------------GRUP DEĞİL ----------------------</ui:remove>
+ 		<p:panel id="pnlNotGrup" rendered="#{!organizasyonService.selectedLevel.equals('GRUP')}">
+			<h:outputText value="İşlem yapmak için Grup seviyesinde bir grup seçiniz." 
+							style="font-size:large;color:red"/>
+			<br />
+			<h:outputText value="Eğer Grup seviyesinde bir grubunuz yoksa 'ANA SAFYA' dan 'ORGANİZASYON YAPISI' butonu ile grup tanımlayınız!" 
+							style="font-size:large;color:red"/>
+		</p:panel>
+
+
+		<ui:remove>-----------------------------------GRUP ----------------------------</ui:remove>
+ 		<p:panel id="pnlPanel" rendered="#{organizasyonService.selectedLevel.equals('GRUP')}">
+		
+			<ui:remove>-----------------------------------ÜYELER----------------------</ui:remove>
+			<p:panel id="pnlUye">
+				<p:commandButton value="Yeni Kayıt"  
+								action="#{uyeListesi.enableNewerItem()}" 
+								update=":form:pnlPanel" 
+								process=":form:pnlPanel"/>
+				<p:commandButton value="Vazgeç"
+								action="#{uyeListesi.disableNewerItem()}"
+								update=":form:pnlPanel,:form:tree"
+								process="@this"/>
+		
+				<p:panelGrid columns="3">
+					<ui:remove>---------------------------ESKİ ÜYELER-----------------</ui:remove>
+					<p:panel rendered="#{uyeListesi.eskiUyeler}" header="Daha önce kaydı olan üyelerden olabilir mi?">
+						<p:commandButton value="Hayır! Yeni bir üye kaydediyorum." action="#{uyeListesi.eskiUyeDegil()}" update=":form:pnlUye" process="@this"/>
+						<p:dataTable id="tblIslUye" value="#{uyeListesi.listDigerUyeler}" var="islUye" scrollable="true" scrollRows="10" emptyMessage="'Hayır! Yeni bir üye kaydediyorum.' butonu ile devam ediniz.">
+							<p:column headerText="Üye" >
+								<h:outputText value="#{islUye.adSoyad}" /> - 
+								<spor:tarihGoster value="#{islUye.dogumTarihi}"/> - 
+								<h:outputText value="#{islUye.cinsiyet}" /> - 
+								<h:outputText value="#{kisiIliskiService.anneBabaGetir(islUye)}" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}"/>
+							</p:column>
+							<p:column >
+								<p:commandButton value="Evet"  action="#{uyeListesi.eskiUyeAktar(islUye)}" update=":form:pnlUye" process=":form:tblIslUye"/>
+							</p:column>
+						</p:dataTable>
+					</p:panel>
+					<ui:remove>------------------------------------------------------</ui:remove>
+					<p:panel  rendered="#{uyeListesi.yeniUye}"  id="pnlYeniUye" header="Yeni Üye Kaydet">
+						<ui:remove>-----------------------YENİ ÜYE--------------------</ui:remove>
+						<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+					
+							<p:outputLabel for="uyeAdi" value="Üye Adı"/>
+							<p:inputText id="uyeAdi" value="#{uyeListesi.instance.ad}" disabled="#{uyeListesi.deletion}"
+										required="true" requiredMessage="Üye Adı giriniz!"/>
+	
+							<p:outputLabel for="uyeSoyadi" value="Üye Soyadı"/>
+							<p:inputText id="uyeSoyadi" value="#{uyeListesi.instance.soyad}" disabled="#{uyeListesi.deletion}"
+										required="true" requiredMessage="Üye Soyadı giriniz!">
+								<p:ajax update=":form:pnlAnne,:form:pnlBaba" event="change" listener="#{uyeListesi.soyadAktar()}" />
+							</p:inputText>
+	
+							<p:outputLabel for="uyeTC" value="TC Kimlik No" />
+							<p:inputText id="uyeTC" value="#{uyeListesi.instance.tcKimlikNo}" disabled="#{uyeListesi.deletion}"/>
+			
+							<p:outputLabel for="dogumTarihi" value="Doğum Tarihi" />
+							<p:calendar id="dogumTarihi"
+										value="#{uyeListesi.instance.dogumTarihi}" pattern="dd/MM/yyyy"  
+										navigator="true" showOtherMonths="true" yearRange="c-75:c"
+										required="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}" 
+										requiredMessage="Doğum Tarihi giriniz!"
+										disabled="#{uyeListesi.deletion}"/>
+			
+							<p:outputLabel for="cinsiyet" value="Cinsiyet" />
+							<p:selectOneMenu id="cinsiyet"
+											value="#{uyeListesi.instance.cinsiyet}" effect="fade" 
+											required="true" 
+											requiredMessage="Cinsiyet giriniz!"
+											disabled="#{uyeListesi.deletion}">
+								<f:selectItem itemLabel="Seçiniz" itemValue="" />
+								<f:selectItems value="#{cinsiyetService.cinsiyetListesi}"
+											var="cinsiyet" itemLabel="#{cinsiyet}"
+											itemValue="#{cinsiyet}" />
+							</p:selectOneMenu>
+							
+							<p:outputLabel for="meslek" value="Meslek" rendered="#{!sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}"/>
+							<p:fieldset rendered="#{!sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}">
+								<p:selectOneMenu id="meslek" value="#{uyeListesi.instance.meslek}"
+												effect="fade" converter="entityConverter"
+												disabled="#{uyeListesi.deletion}">
+									<f:selectItem itemLabel="Seçiniz" itemValue="0"/>
+									<f:selectItems value="#{meslekHome.listMeslekByIsletme(sessionObject.selectedIsletme.id)}" var="meslek" 
+												itemLabel="#{meslek.adi}" itemValue="#{meslek}" />
+								</p:selectOneMenu>
+								<p:commandLink value="Yeni Meslek Ekleyin"  
+												action="#{meslekHome.sayfaLoad()}"
+												oncomplete="dlgMeslek.show()" 
+												disabled="#{uyeListesi.deletion}"
+												process="@this"/>
+							</p:fieldset>
+
+							<h:outputText value="Anne" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}"/>
+							<p:panelGrid id="pnlAnne" columns="3"
+										rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}">
+								<h:outputText value="Ad" />
+								<h:outputText value="Soyad" />
+								<h:outputText value="Cep Tel" />	
+
+								<p:inputText value="#{uyeListesi.anneIliski.iliskiliKisi.ad}" disabled="#{uyeListesi.deletion}"/>
+								<p:inputText value="#{uyeListesi.anneIliski.iliskiliKisi.soyad}" disabled="#{uyeListesi.deletion}"/>
+								<p:inputMask mask="(999) 999 99 99" value="#{uyeListesi.anneTel.telefon}"
+											disabled="#{uyeListesi.deletion}"
+											>
+								</p:inputMask>
+							</p:panelGrid>	
+
+							<h:outputText value="Baba" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}"/>
+							<p:panelGrid id="pnlBaba" columns="3"
+										rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}">
+								<h:outputText value="Ad" />
+								<h:outputText value="Soyad" />
+								<h:outputText value="Cep Tel" />	
+
+								<p:inputText value="#{uyeListesi.babaIliski.iliskiliKisi.ad}" disabled="#{uyeListesi.deletion}"/>
+								<p:inputText value="#{uyeListesi.babaIliski.iliskiliKisi.soyad}" disabled="#{uyeListesi.deletion}"/>
+								<p:inputMask mask="(999) 999 99 99" value="#{uyeListesi.babaTel.telefon}"
+											disabled="#{uyeListesi.deletion}"
+											>
+								</p:inputMask>
+							</p:panelGrid>	
+
+							<h:outputText value="Gruba Giriş Tarihi" />
+							<p:panel id="pnlGirisTarihi">
+								<spor:tarih id="girisTarihi"
+											value="#{uyeListesi.uyeGrup.girisTarihi}"
+											disabled="#{uyeListesi.deletion}"/>
+							</p:panel>
+							
+							<h:outputText value="Gruptan Çıkış Tarihi" />								
+							<p:panel id="pnlCikisTarihi">
+								<spor:tarih id="cikisTarihi"
+											value="#{uyeListesi.uyeGrup.cikisTarihi}"
+											disabled="#{uyeListesi.deletion}"
+											/>
+								<p:panelGrid columns="2">
+				   					<p:selectOneMenu id="cikisAy" 
+													label="Ay"
+													value="#{uyeListesi.grupCikisAySayi}"
+													disabled="#{uyeListesi.deletion}"
+													>
+										<f:selectItems value="#{utilNumberService.sayiListesi}" var="sayi" 
+														itemLabel="#{sayi}" itemValue="#{sayi}" />
+									</p:selectOneMenu>
+					   				<p:commandButton value="ay sonra gruptan çıksın"
+					                                action="#{uyeListesi.cikisTarihiBelirle()}"
+					                                disabled="#{uyeListesi.deletion}"
+	                              					update=":form:pnlCikisTarihi,:form:pnlGirisTarihi" 
+	                              					process="@this,:form:cikisAy,:form:girisTarihi"
+	                              					>
+				                    </p:commandButton>
+								</p:panelGrid>
+							</p:panel>							
+							
+							<h:outputText value="" />
+							<p:commandButton value="Üyeyi #{uyeListesi.uyeGrupta ? 'Güncelle' : 'Gruba Ekle'}"
+											action="#{uyeListesi.save()}"
+											rendered="#{!uyeListesi.deletion}"
+											update=":form:pnlPanel,:form:tree"
+											process=":form:pnlYeniUye"/>
+							<p:commandButton value="Gruptan Çıkar"
+											action="#{uyeListesi.delete()}"
+											update=":form:pnlPanel,:form:tree"
+											rendered="#{uyeListesi.deletion}"
+											process=":form:pnlYeniUye"/>
+	
+						</p:panelGrid>	
+
+					</p:panel>						
+
+					<ui:remove>---------------------------ÜYE TARİFE----------------------</ui:remove>
+					<p:panel  rendered="#{uyeListesi.uyeGrupta}" header="Aidat Tarifesi" id="pnlUyeTarife" >
+	
+						<p:panelGrid columns="2">
+							<p:outputLabel for="rdbTarife" value="Tarife"/>
+						    <p:selectOneMenu id="rdbTarife" 
+						    					converter="entityConverter" 
+						    					widgetVar="tar" 
+						    					value="#{tahakkukHome.instance.tarife}" 
+						    					style="width:100%"
+												required="true" requiredMessage="Tarife seçiniz!"
+												rendered="#{tarifeService.grubunTarifeleri(organizasyonService.selectedGrup).size()>0}"
+												disabled="#{uyeListesi.deletion}"
+												>
+								<f:selectItem itemLabel="Seç" itemValue="0"/>
+								<f:selectItems value="#{tarifeService.grubunTarifeleri(organizasyonService.selectedGrup)}"
+												var="tarife" itemLabel="#{tarife}" itemValue="#{tarife}"/>
+								<p:ajax update="tblTahakkukDetay,:form:thkToplamTutar,:form:thkToplamIskonto,:form:pnlUyeTarife" event="change" listener="#{tahakkukHome.tahakkukOlustur(uyeListesi.uyeGrup, tahakkukHome.instance.tarife)}" />
+						    </p:selectOneMenu>
+		
+						    <h:outputText value="Bu gruba ait bir Tarife belirlenmemiş. ANA SAYFA 'dan 'ORGANİZASYON YAPISI' butonu ile ilgili Grup altından ücret tarifesi tanımlayınız!" 
+						    				rendered="#{tarifeService.grubunTarifeleri(organizasyonService.selectedGrup).size() == 0}" />
+
+							<p:outputLabel for="tblTahakkukDetay" value="#{tahakkukHome.instance.acikVade ? 'İlk Ödeme' : 'Ödeme Tablosu'}" />
+						    <p:dataTable id="tblTahakkukDetay" value="#{tahakkukHome.instance.tahakkukDetayListesi}" 
+						    			var="detay" emptyMessage="#{tahakkukHome.instance.tarife.herAy ? 'Her ay  alınacak.' : 'Henüz bir tarife seçilmemiş.'}"
+						    			rowIndexVar="rowInd"
+						    			>
+					 	   		<p:column rendered="#{!tahakkukHome.instance.herAy}">  
+						   			<f:facet name="header">
+					   					<h:outputText value="Taksit No" />
+									</f:facet>
+		           					<h:outputText value="#{detay.taksitNo}">
+		           						<f:convertNumber integerOnly="true"/>
+									</h:outputText>  	
+		       					</p:column>
+						   		<p:column rendered="#{!tahakkukHome.instance.herAy}">  
+						   			<f:facet name="header">
+					   					<h:outputText value="Taksit Tutarı" />
+									</f:facet>
+		           					<p:inputText value="#{detay.taksitTutari}" style="text-align:right" disabled="#{uyeListesi.deletion}">
+		           						<f:convertNumber type="number" maxFractionDigits="0"/>
+										<p:ajax update=":form:thkToplamTutar,:form:thkToplamIskonto" event="change" listener="#{tahakkukHome.toplamTutarOlustur()}" />
+		           					</p:inputText>  
+		       					</p:column>
+
+					 	   		<p:column rendered="#{tahakkukHome.instance.herAy}">  
+						   			<f:facet name="header">
+					   					<h:outputText value="Geçerli Tarih Başlangıcı" />
+									</f:facet>
+		           					<spor:tarih value="#{detay.baslangicTarihi}" disabled="#{uyeListesi.deletion or tahakkukHome.tahsilatVar(detay)}"/>
+		       					</p:column>
+
+					 	   		<p:column rendered="#{tahakkukHome.instance.herAy}">  
+						   			<f:facet name="header">
+					   					<h:outputText value="Geçerli Tarih Bitişi" />
+									</f:facet>
+		           					<spor:tarih value="#{detay.bitisTarihi}" disabled="#{uyeListesi.deletion or tahakkukHome.tahsilatVar(detay)}"/>  	
+		       					</p:column>
+
+								<ui:remove>
+								</ui:remove>
+								
+						   		<p:column rendered="#{tahakkukHome.instance.herAy}">  
+						   			<f:facet name="header">
+					   					<h:outputText value="Tutar" />
+									</f:facet>
+		           					<p:inputText value="#{detay.herAyTutar}" style="text-align:right" disabled="#{uyeListesi.deletion or tahakkukHome.tahsilatVar(detay)}" readonly="true">
+		           						<f:convertNumber type="number" maxFractionDigits="0"/>
+		           					</p:inputText>  
+		       					</p:column>
+
+						   		<p:column>
+						   			<f:facet name="header">
+					   					<h:outputText value="Vade Tarihi" />
+						   			</f:facet>
+									<p:calendar id="vadeTarihi"
+												value="#{detay.vadeTarihi}" pattern="dd/MM/yyyy"  
+												required="true" requiredMessage="Vade Tarihi giriniz!"
+												disabled="#{uyeListesi.deletion or tahakkukHome.tahsilatVar(detay)}"/>
+		       					</p:column>        					
+
+						   		<p:column>
+						   			<f:facet name="header">
+						   				<p:panelGrid columns="2">						   					
+											<h:outputText value="Vade Günü Değiştir" 
+														rendered="#{tahakkukHome.instance.tarife!=null}"
+														/>
+						   					<p:selectOneMenu id="vadeGun" 
+															label="Gün"
+															value="#{tahakkukHome.instance.aidatGun}"
+															disabled="#{uyeListesi.deletion}"
+															rendered="#{tahakkukHome.instance.tarife!=null}"
+															>
+												<f:selectItem itemLabel="Seç" itemValue="0"/>
+												<f:selectItems value="#{utilDateService.gunListesi}" var="gun" 
+																itemLabel="#{gun}" itemValue="#{gun}" />
+							   					<p:ajax update=":form:tblTahakkukDetay" event="change" listener="#{tahakkukHome.vadeTarihGunDegistir(tahakkukHome.instance.aidatGun)}" />
+											</p:selectOneMenu>
+
+											<h:outputText value="Vadeyi bir ay sonra başlat" 
+														rendered="#{tahakkukHome.instance.tarife!=null}"
+														/>
+							   				<p:commandButton title="Bir ay sonra başlat"
+							   								icon="ui-icon-arrowthick-1-e"
+							                                action="#{tahakkukHome.vadeTarihAyDegistir(1)}"
+							                                disabled="#{uyeListesi.deletion}"
+	                                						update=":form:pnlUyeTarife" style="float:right"
+	                                						rendered="#{tahakkukHome.instance.tarife!=null}"
+	                                						>
+						                    </p:commandButton>
+
+											<h:outputText value="Vadeyi bir ay önce başlat" 
+														rendered="#{tahakkukHome.instance.tarife!=null}"
+														/>
+							   				<p:commandButton title="Bir ay önce başlat"
+							   								icon="ui-icon-arrowthick-1-w"
+							                                action="#{tahakkukHome.vadeTarihAyDegistir(-1)}"
+							                                disabled="#{uyeListesi.deletion}"
+	                                						update=":form:pnlUyeTarife" style="float:right"
+	                                						rendered="#{tahakkukHome.instance.tarife!=null}"
+	                                						>
+						                    </p:commandButton>
+										</p:panelGrid>
+						   			</f:facet>
+
+					   				<p:commandButton value="Taksit Ekle"
+					   								icon="ui-icon-arrowthick-1-n"
+					                                action="#{tahakkukHome.taksitEkleBasa()}"
+					                                disabled="#{uyeListesi.deletion}"
+                               						update=":form:pnlUyeTarife"
+                               						rendered="#{(tahakkukHome.instance.tarife!=null) and (rowInd==0) and (tahakkukHome.instance.tahakkukDetayListesi.size()>1)}"
+                               						>
+				                    </p:commandButton>
+					   				<p:commandButton value="Taksit Sil"
+					   								icon="ui-icon-circle-minus"
+					                                action="#{tahakkukHome.taksitSil(rowInd)}"
+					                                disabled="#{uyeListesi.deletion}"
+                               						update=":form:pnlUyeTarife"
+                               						rendered="#{(tahakkukHome.instance.tarife!=null) and (rowInd==0) and (tahakkukHome.instance.tahakkukDetayListesi.size()>1)}"
+                               						>
+				                    </p:commandButton>
+						   			
+					   				<p:commandButton value="Taksit Ekle"
+					   								icon="ui-icon-arrowthick-1-s"
+					                                action="#{tahakkukHome.taksitEkleSona()}"
+					                                disabled="#{uyeListesi.deletion}"
+                               						update=":form:pnlUyeTarife"
+                               						rendered="#{(tahakkukHome.instance.tarife!=null) and (rowInd==tahakkukHome.instance.tahakkukDetayListesi.size()-1)}"
+                               						>
+				                    </p:commandButton>
+					   				<p:commandButton value="Taksit Sil"
+					   								icon="ui-icon-circle-minus"
+					                                action="#{tahakkukHome.taksitSil(rowInd)}"
+					                                disabled="#{uyeListesi.deletion}"
+                               						update=":form:pnlUyeTarife"
+                               						rendered="#{(tahakkukHome.instance.tarife!=null) and (rowInd==tahakkukHome.instance.tahakkukDetayListesi.size()-1)}"
+                               						>
+				                    </p:commandButton>
+		       					</p:column>        					
+						    </p:dataTable>
+							
+							<p:outputLabel for="thkHerAyTutar" value="Her Ay Alınacak Tutar" rendered="#{tahakkukHome.instance.tarife.herAy}"/>
+							<p:inputText id="thkHerAyTutar" value="#{tahakkukHome.instance.herAyTutar}" style="text-align:right" 
+										rendered="#{tahakkukHome.instance.tarife.herAy}" disabled="#{uyeListesi.deletion}">
+           						<f:convertNumber type="number" maxFractionDigits="0"/>
+								<p:ajax update=":form:thkToplamIskonto,:form:tblTahakkukDetay" event="change" listener="#{tahakkukHome.herAyTutarGuncelle()}" />
+							</p:inputText>
+
+							<p:outputLabel for="thkToplamTutar" value="Toplam Tutar" rendered="#{!tahakkukHome.instance.tarife.herAy}"/>
+							<p:inputText id="thkToplamTutar" value="#{tahakkukHome.instance.toplamTutar}" style="text-align:right" 
+										readonly="true" rendered="#{!tahakkukHome.instance.tarife.herAy}" disabled="#{uyeListesi.deletion}">
+          						<f:convertNumber type="number" maxFractionDigits="0"/>
+							</p:inputText>
+						    
+							<p:outputLabel for="thkToplamIskonto" value="Toplam İskonto"/>
+							<p:inputText id="thkToplamIskonto" value="#{tahakkukHome.instance.toplamIndirim}" style="text-align:right" 
+										readonly="true" disabled="#{uyeListesi.deletion}">
+	      						<f:convertNumber type="number" />
+							</p:inputText>
+						    
+						</p:panelGrid>
+						<h:outputText value="" />
+						<p:commandButton value="Ücret Tarifesini Kaydet" id="btnTarifeKAydet" 
+										action="#{tahakkukHome.saveWithoutNavigation()}" update=":form"
+										rendered="#{tarifeService.grubunTarifeleri(organizasyonService.selectedGrup).size() > 0}" 
+										process=":form:pnlUyeTarife"
+										disabled="#{uyeListesi.deletion}"
+										/>
+		
+					</p:panel>
+	
+				</p:panelGrid>
+				
+				<ui:remove>---------------------------İLETİŞİM----------------------</ui:remove>
+				<p:panelGrid columns="3">
+					<p:panel  rendered="#{uyeListesi.uyeGrupta}" header="Telefon">
+						<f:event type="preRenderView" listener="#{telefonListesi.initialize(uyeListesi.instance.id, true)}" />
+						<ui:include src="telefonlar.xhtml"></ui:include>	
+					</p:panel>
+					<p:panel  rendered="#{uyeListesi.uyeGrupta}" header="Adres">
+						<f:event type="preRenderView" listener="#{adresListesi.initialize(uyeListesi.instance.id, true)}" />
+						<ui:include src="adresler.xhtml"></ui:include>	
+					</p:panel>
+					<p:panel  rendered="#{uyeListesi.uyeGrupta}" header="Sosyal Medya">
+						<f:event type="preRenderView" listener="#{webIletisimListesi.initialize(uyeListesi.instance.id, true)}" />
+						<ui:include src="webIletisimler.xhtml"></ui:include>	
+					</p:panel>
+				</p:panelGrid>
+
+				<ui:remove>---------------------------ÜYE TABLOSU----------------------</ui:remove>
+				<p:dataTable var="uye" 
+							value="#{uyeListesi.list}"
+							emptyMessage="Henüz bu grubua kayıtlı bir üye yok. Yeni Kayıt butonu ile kayıt edebilirsiniz."
+							>
+					<f:facet name="header">
+						<h:outputText value="#{uyeListesi.modelSuper} grubuna ait üyeler" />
+					</f:facet>
+
+					<p:column headerText="Düzenle">
+						<p:commandButton value="Güncelle" action="#{uyeListesi.updateInstance(uye)}" update=":form:pnlPanel" process="@this"/>
+						<p:commandButton value="Gruptan Çıkar" action="#{uyeListesi.deleteInstance(uye)}" update=":form:pnlPanel" process="@this"/>
+					</p:column>	
+
+					<p:column headerText="Üye Adı" sortBy="#{uye.ad}">
+						<h:outputText value="#{uye.ad}" />
+					</p:column>
+			
+					<p:column headerText="Üye Soyadı" sortBy="#{uye.soyad}">
+						<h:outputText value="#{uye.soyad}" />
+					</p:column>
+			 
+					<p:column headerText="Ebeveynler" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}">
+						<h:outputText value="#{kisiIliskiService.anneBabaGetir(uye)}"/>
+					</p:column>
+
+					<p:column headerText="Doğum Tarih" sortBy="#{uye.dogumTarihi}">
+						<spor:tarihGoster value="#{uye.dogumTarihi}"/>
+					</p:column>
+
+					<p:column headerText="Cinsiyet" sortBy="#{uye.cinsiyet}">
+						<h:outputText value="#{uye.cinsiyet}" />
+					</p:column>
+
+					<p:column headerText="Tarife">
+						<h:outputText value="#{(tahakkukService.uyeninTahakkuku(uye, uyeListesi.modelSuper)).tarife}" />
+					</p:column>
+
+					<p:column headerText="Meslek" rendered="#{!sessionObject.selectedIsletmeTipi.equals('SPOR OKULU')}" sortBy="#{uye.meslek.adi}">
+						<h:outputText value="#{uye.meslek.adi}" />
+					</p:column>
+
+					<p:column headerText="Gruba Giriş Tarihi" sortBy="#{uyeService.uyeninGrubu(uyeListesi.modelSuper, uye).girisTarihi}">
+						<spor:tarihGoster value="#{uyeService.uyeninGrubu(uyeListesi.modelSuper, uye).girisTarihi}" />
+					</p:column>
+
+					<p:column headerText="Gruptan Çıkış Tarihi" sortBy="#{uyeService.uyeninGrubu(uyeListesi.modelSuper, uye).cikisTarihi}">
+						<spor:tarihGoster value="#{uyeService.uyeninGrubu(uyeListesi.modelSuper, uye).cikisTarihi}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</p:panel>
+
+ 		</p:panel>
+		
+		<ui:remove>-----------------------------------MESLEK EKLE ----------------------</ui:remove>
+		<p:dialog widgetVar="dlgMeslek" modal="true" header="MESLEK EKLE" id="dlgMeslekEkle">
+			<p:panelGrid columns="2">
+				<p:outputLabel for="meslekAdi" value="Meslek Adı"/>
+				<p:inputText id="meslekAdi" 
+							value="#{meslekHome.instance.adi}" 
+							/>
+
+			 	<p:commandButton value="KAPAT"  
+			 					oncomplete="dlgMeslek.hide()" 
+			 					update=":form:meslek"
+			 					process="@this"
+			 					/>
+				<p:commandButton value="KAYDET"
+								action="#{meslekHome.saveWithoutNavigation()}"
+			 					oncomplete="dlgMeslek.hide()" 
+			 					update=":form:meslek"
+			 					process=":form:dlgMeslekEkle"
+								>
+			 		<p:ajaxStatus onstart="dlgWait.show()" oncomplete="dlgWait.hide()"/>
+				</p:commandButton>	
+			</p:panelGrid>
+
+		</p:dialog>
+
+		<ui:remove>-----------------------------------WAIT ----------------------</ui:remove>
+		<p:dialog widgetVar="dlgWait" modal="true" id="dlgWait" closable="false">
+			<p:graphicImage value="/images/InProgress.gif"></p:graphicImage>
+		</p:dialog>
+
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>

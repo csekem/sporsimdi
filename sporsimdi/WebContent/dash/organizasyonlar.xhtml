@@ -1,0 +1,181 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:ss="http://java.sun.com/jsf/composite/composite"
+	contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYONLAR')}" />
+	<f:event type="preRenderView" listener="#{organizasyonListesi.sayfaLoad()}" />
+
+	<h:head>#{sessionObject.selectedIsletme.unvan} işletmesinde bulunan organizasyon yapısı</h:head>
+	<h:form id="form">
+
+		<ui:remove>-----------------------------------ORGANIZASYONLAR----------------------</ui:remove>
+		<p:panel>
+		<p:commandButton value="Yeni Organizasyon"  action="#{organizasyonListesi.enableNewerItem()}" update="form" >
+		</p:commandButton>
+		
+		<p:panel rendered="#{organizasyonListesi.newerItem}" header="Yeni Organizasyon Tanımla">
+			<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+
+				<h:outputLabel for="orgTipi" value="Bu organizasyon hangi amaç için kullanılıyor"></h:outputLabel>
+				<p:selectOneButton id="orgTipi"
+									value="#{organizasyonListesi.instance.organizasyonTipi}"
+									disabled="#{organizasyonListesi.deletion}"
+							>
+					<f:selectItems value="#{organizasyonListesi.organizasyonTipiListesi}"  var="tip" 
+									itemLabel="#{tip}" itemValue="#{tip}"
+									>
+					</f:selectItems>
+				</p:selectOneButton>
+				<h:outputText value="" />
+				
+				<h:outputLabel for="orgAdi" value="Organizasyon Adı"></h:outputLabel>
+				<p:inputText id="orgAdi" value="#{organizasyonListesi.instance.adi}" disabled="#{organizasyonListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="orgBasTarih" value="Organizasyon Başlangıç Tarihi"></h:outputLabel>
+				<ss:tarih id="orgBasTarih" value="#{organizasyonListesi.instance.tarihBaslangic}" disabled="#{organizasyonListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<h:outputLabel for="orgBitTarih" value="Organizasyon Bitiş Tarihi"></h:outputLabel>
+				<ss:tarih id="orgBitTarih" value="#{organizasyonListesi.instance.tarihBitis}" disabled="#{organizasyonListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<p:commandButton value="Vazgeç"
+								action="#{organizasyonListesi.disableNewerItem()}"
+								update=":form"/>
+				<p:commandButton value="#{sahaListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								action="#{organizasyonListesi.save()}"
+								update=":form"
+								rendered="#{!organizasyonListesi.deletion}"/>
+				<p:commandButton value="Sil"
+								action="#{organizasyonListesi.delete()}"
+								update=":form"
+								rendered="#{organizasyonListesi.deletion}"/>
+				<h:outputText value="" />
+
+		</p:panelGrid>
+		
+		</p:panel>
+
+		<p:dataTable var="org" 
+					value="#{organizasyonListesi.list}"
+					emptyMessage="Henüz tanımlı bir organiasyon yapısı yok. Yeni Organizasyon butonu ile tanımlayabilirsiniz."
+					>
+			<f:facet name="header">
+				#{sessionObject.selectedIsletme.unvan} işletmesindeki organizasyonlar
+			</f:facet>
+
+			<p:column>
+				<p:commandButton value="Hangi tesislerde var" action="#{orgTesisListesi.organizasyonBelirle(org)}" update=":form">
+				</p:commandButton>
+			</p:column>	
+
+			<p:column headerText="Organizasyon Adı">
+				<h:outputText value="#{org.adi}" />
+			</p:column>
+			
+			<p:column headerText="Organizasyon Türü">
+				<h:outputText value="#{org.organizasyonTipi}" />
+			</p:column>
+
+			<p:column headerText="Başlama Tarihi">
+				<ss:tarihGoster value="#{org.tarihBaslangic}" />
+			</p:column>
+
+			<p:column headerText="Bitiş Tarihi">
+				<ss:tarihGoster value="#{org.tarihBitis}" />
+			</p:column>
+
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{organizasyonListesi.updateInstance(org)}" update=":form">
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{organizasyonListesi.deleteInstance(org)}" update=":form">
+				</p:commandButton>
+			</p:column>	
+
+		</p:dataTable>
+
+		</p:panel>
+
+		<br />
+		<ui:remove>-----------------------------------ORG TESİSLER----------------------</ui:remove>
+		<p:panel rendered="#{orgTesisListesi.organizasyon != null}">
+		<p:commandButton value="Yeni Tesis"  action="#{orgTesisListesi.enableNewerItem()}" update="form" >
+		</p:commandButton>
+		
+		<p:panel rendered="#{orgTesisListesi.newerItem}" header="Yeni Tesis Tanımla">
+			<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+				
+				<h:outputLabel for="orgTesis" value="Hangi tesiste yapılıyor"></h:outputLabel>
+				<p:selectOneButton id="orgTesis"
+									value="#{orgTesisListesi.instance.tesis}"
+									disabled="#{orgTesisListesi.deletion}"
+									converter="entityConverter"
+							>
+					<f:selectItems value="#{tesisService.listTesisByIsletme(sessionObject.selectedIsletme.id)}"  var="tesis" 
+									itemLabel="#{tesis.adi}" itemValue="#{tesis}"
+									/>
+				</p:selectOneButton>
+				<h:outputText value="" />
+
+				<h:outputLabel for="orgTesisAdi" value="Tesisdeki Adı"></h:outputLabel>
+				<p:inputText id="orgTesisAdi" value="#{orgTesisListesi.instance.adi}" disabled="#{orgTesisListesi.deletion}"/>
+				<h:outputText value="" />
+
+				<p:commandButton value="Vazgeç"
+								action="#{orgTesisListesi.disableNewerItem()}"
+								update=":form"/>
+				<p:commandButton value="#{sahaListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								action="#{orgTesisListesi.save()}"
+								update=":form"
+								rendered="#{!orgTesisListesi.deletion}"/>
+				<p:commandButton value="Sil"
+								action="#{orgTesisListesi.delete()}"
+								update=":form"
+								rendered="#{orgTesisListesi.deletion}"/>
+				<h:outputText value="" />
+
+		</p:panelGrid>
+		
+		</p:panel>
+
+		<p:dataTable var="orgTesis" 
+					value="#{orgTesisListesi.list}"
+					emptyMessage="Henüz bu organizasyonun yapılacağı bir tesis seçilmemiş. Yeni Tesis butonu ile seçebilirsiniz."
+					>
+			<f:facet name="header">
+				#{orgTesisListesi.organizasyon.adi} organizasyonunu yapıldığı tesisler
+			</f:facet>
+
+			<p:column headerText="Organizasyon yapıldığı tesisteki adı">
+				<h:outputText value="#{orgTesis.adi}" />
+			</p:column>
+			
+			<p:column headerText="Tesis">
+				<h:outputText value="#{orgTesis.tesis}" />
+			</p:column>
+
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{orgTesisListesi.updateInstance(orgTesis)}" update=":form">
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{orgTesisListesi.deleteInstance(orgTesis)}" update=":form">
+				</p:commandButton>
+			</p:column>	
+
+		</p:dataTable>
+
+		</p:panel>
+
+	</h:form>
+
+    </ui:define>
+</ui:composition>
+
+</f:view>

@@ -1,0 +1,74 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{donemHome.sayfaLoad()}" />
+
+	<f:loadBundle basename="#{sessionObject.labelsProperties}" var="labels"/>
+
+	<h:head>#{labels.donem} Tanımlama Ekranı</h:head>
+	
+	<h:form id="form">
+	
+		<p:panelGrid columns="3" style="margin-bottom:10px" cellpadding="5">
+
+			<h:outputText value="Tesis" />
+			<p:selectOneMenu id="tesis" value="#{donemHome.instance.tesis}"
+				effect="fade" converter="entityConverter">
+				<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+				<f:selectItems value="#{tesisService.isletmeTesisListesi}"
+					var="tesis" itemLabel="#{tesis.adi}" itemValue="#{tesis}" />
+			</p:selectOneMenu>
+			<p:commandButton value="Tesisler"  action="#{tesisService.yonlendir(sessionObject.isletme.id)}" >
+			</p:commandButton>
+
+			<h:outputText value="#{labels.donemTipi}" />
+			<p:selectOneMenu value="#{donemHome.instance.donemTipi}"
+				effect="fade" converter="entityConverter">
+				<f:selectItem itemLabel="Seçiniz" itemValue="0" />
+				<f:selectItems value="#{donemTipiService.donemTipiListesi}"
+					var="donemTipi" itemLabel="#{donemTipi.adi}"
+					itemValue="#{donemTipi}" />
+			</p:selectOneMenu>
+			<p:commandButton value="Yeni #{labels.donemTipi}"  action="#{donemTipiService.yonlendir(null)}" >
+			</p:commandButton>
+
+			<h:outputLabel for="donemAdi" value="#{labels.donem} Adı"></h:outputLabel>
+			<p:inputText id="donemAdi" value="#{donemHome.instance.adi}"></p:inputText>
+			<h:outputText value="" />
+
+			<h:outputLabel for="baslangic" value="Başlangıç Tarihi" 
+							rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+			<p:calendar id="baslangic" value="#{donemHome.instance.donemBaslangic}" 
+						pattern="dd/MM/yyyy" locale="tr" timeZone="Turkey"
+						navigator="true"
+						rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}" />
+			<h:outputText value="" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+
+			<h:outputLabel for="bitis" value="Bitiş Tarihi" 
+							rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+			<p:calendar id="bitis" value="#{donemHome.instance.donemBitis}"	
+						pattern="dd/MM/yyyy" locale="tr" timeZone="Turkey"
+						navigator="true"
+						rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+			<h:outputText value="" rendered="#{sessionObject.selectedIsletmeTipi.equals('SPOR_OKULU')}"/>
+
+			<p:commandButton value="Vazgeç"
+							id="vazgecButton" action="#{menuService.goToLastScreen()}"/>
+			<p:commandButton value="#{donemHome.managed ? 'Güncelle' : 'Kaydet'}"
+							id="kaydetButton" action="#{donemHome.save}" />
+			<h:outputText value="" />
+
+		</p:panelGrid>
+
+	</h:form>
+
+ 	</ui:define>
+</ui:composition>
+
+</f:view>

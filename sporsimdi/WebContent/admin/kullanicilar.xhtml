@@ -1,0 +1,121 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<h:head>KULLANICILAR</h:head>
+
+	<h:form id="form">
+
+		<p:commandButton value="Yeni Kullanıcı" action="#{kullaniciListesi.yonlendir(null)}" >
+		</p:commandButton>	
+
+		<p:dataTable var="kullanici" value="#{kullaniciListesi}"
+					paginator="true" rows="10"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" selectionMode="single"
+					selection="#{kullaniciListesi.kullanici}" id="tblKullanici"
+					lazy="true"
+					>
+			<f:facet name="header">
+				Kullanıcılar
+			</f:facet>
+
+			<p:column headerText="Kullanıcı Adı (e-mail)">
+				<h:outputText value="#{kullanici.kullanici}" />
+			</p:column>
+			
+			<p:column headerText="Şifresi">
+				<h:outputText value="#{kullanici.sifre}" />
+			</p:column>
+
+			<p:column headerText="Blokeli Mi?">
+				<p:selectBooleanButton value="#{kullanici.blokeli}" onLabel="EVET" offLabel="HAYIR" disabled="true"></p:selectBooleanButton>
+			</p:column>
+
+			<p:column headerText="Ad Soyad">
+				<h:outputText value="#{kullanici.kisi.adSoyad}" />
+			</p:column>
+
+			<p:column headerText="İşletmeler">
+				<p:dataList value="#{isletmeService.listIsletmeByKisi(kullanici.kisi)}" var="isletme" type="ordered">
+					<h:outputText value="#{isletme.unvan}" />
+				</p:dataList>
+			</p:column>
+
+			<p:column style="width:40px">
+				<h:panelGrid columns="3" styleClass="actions" cellpadding="2">
+					<p:commandButton id="selectButton" update=":form:display"
+						oncomplete="kullaniciDialog.show()" icon="ui-icon-search"
+						title="View">
+						<f:setPropertyActionListener value="#{kullanici}"
+							target="#{kullaniciListesi.kullanici}" />
+					</p:commandButton>
+				</h:panelGrid>
+			</p:column>
+			
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{kullaniciListesi.yonlendir(kullanici.id)}">
+				</p:commandButton>
+			</p:column>	
+
+
+		</p:dataTable>
+
+
+		<p:dialog header="Kullanici Detay" widgetVar="kullaniciDialog"
+			resizable="false" showEffect="explode" hideEffect="explode">
+			<h:panelGrid id="display" columns="2" cellpadding="2">
+				<h:outputText value="Kullanıcı Id:" />
+				<h:outputText value="#{kullaniciListesi.kullanici.id}"
+					style="font-weight:bold" />
+
+				<h:outputText value="Kullanıcı Adı:" />
+				<h:outputText value="#{kullaniciListesi.kullanici.kullanici}"
+					style="font-weight:bold" />
+			</h:panelGrid>
+		</p:dialog>
+
+<ui:remove>
+		<p:dataTable var="kisi" value="#{kisiListesi}"
+					paginator="true" rows="10"
+					paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+					rowsPerPageTemplate="5,10,15" selectionMode="single"
+					selection="#{kisiListesi.kisi}" id="tblKisi"
+					lazy="true"
+					>
+
+			<p:column headerText="Kişi Adı Soyadı">
+				<h:outputText value="#{kisi.adSoyad}" />
+			</p:column>
+			
+			<p:column headerText="İşletmeler">
+				<p:dataTable value="#{isletmeService.listIsletmeByKisi(kisi)}" var="isletme" type="ordered">
+					<p:column headerText="İşletme Ünvanı">
+						<h:outputText value="#{isletme.unvan}" />
+					</p:column>
+					<p:column headerText="İşletme İlişkisi">
+						<h:outputText value="#{isletme.unvan}" />
+					</p:column>
+				</p:dataTable>
+			</p:column>
+
+			<p:column headerText="Kişi Tipi">
+				<h:outputText value="#{kisiService.getKisiTipi(kisi)}" />
+			</p:column>
+			
+		</p:dataTable>
+</ui:remove>
+
+
+	</h:form>
+
+
+    </ui:define>
+</ui:composition>
+
+</f:view>

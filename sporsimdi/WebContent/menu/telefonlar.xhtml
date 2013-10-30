@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"
+	xmlns:p="http://primefaces.org/ui" >
+
+		
+	<p:panel id="pnlTelefon">
+		<p:commandButton value="Yeni Telefon"  action="#{telefonListesi.enableNewerItem()}" update=":form:pnlTelefon" process="@this">
+		</p:commandButton>
+	
+		<p:panel id="pnlNewerItemTel" 
+				rendered="#{telefonListesi.newerItem}" 
+				header="#{telefonListesi.deletion ? 'Bu Telefonu Sil' : telefonListesi.managed ? 'Bu Telefonu Güncelle' : 'Yeni Telefon Tanımla'}">
+			<p:panelGrid columns="2" style="margin-bottom:10px" cellpadding="5">
+				<h:outputLabel for="telTelefonTipi" value="Telefon Tipi"></h:outputLabel>
+				<p:selectOneMenu id="telTelefonTipi" value="#{telefonListesi.instance.telefonTipi}"
+								disabled="#{telefonListesi.deletion}">
+					<f:selectItems value="#{telefonService.telefonTipiListesi}" var="telefonTipi" itemLabel="#{telefonTipi}" itemValue="#{telefonTipi}"/>
+				</p:selectOneMenu>
+	
+				<h:outputLabel for="telTelefon" value="Telefon"></h:outputLabel>
+				<p:inputMask mask="(999) 999 99 99" id="telTelefon" value="#{telefonListesi.instance.telefon}"
+							disabled="#{telefonListesi.deletion}">
+				</p:inputMask>
+	
+				<p:commandButton value="Vazgeç"
+								id="btnVazgecTel" 
+								action="#{telefonListesi.disableNewerItem()}"
+								update=":form:pnlTelefon"
+								ajax="true"
+								process=":form:pnlTelefon"/>
+				<p:commandButton value="#{telefonListesi.managed ? 'Güncelle' : 'Kaydet'}"
+								id="btnKaydetTel" 
+								action="#{telefonListesi.save()}"
+								update=":form:pnlTelefon"
+								rendered="#{!telefonListesi.deletion}"
+								process=":form:pnlTelefon"/>
+				<p:commandButton value="Sil"
+								id="btnSilTel" 
+								action="#{telefonListesi.delete()}"
+								update=":form:pnlTelefon"
+								rendered="#{telefonListesi.deletion}"
+								process=":form:pnlTelefon"/>
+	
+			</p:panelGrid>
+		</p:panel>
+	
+		<p:dataTable value="#{telefonListesi.list}" var="telefon" id="tblTelefon" emptyMessage="Kayıt bulunamadı.">
+			<f:facet name="header">
+				Telefonlar
+			</f:facet>
+			<p:column headerText="Telefon">
+				<h:outputText value="#{telefon.telefonTipi} - " />
+				<h:outputText value="#{telefon.telefon}" />
+			</p:column>
+			<p:column headerText="Düzenle">
+				<p:commandButton value="Güncelle" action="#{telefonListesi.updateInstance(telefon)}" 
+								update=":form:pnlTelefon" 
+								 >
+				</p:commandButton>
+				<p:commandButton value="Sil" action="#{telefonListesi.deleteInstance(telefon)}" 
+								update=":form:pnlTelefon"
+								>
+				</p:commandButton>
+			</p:column>	
+	
+		</p:dataTable>
+	
+	</p:panel>
+
+</html>

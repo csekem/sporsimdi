@@ -1,0 +1,27 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('YONETIM')}" />
+
+	<h:head>YÖNETİM EKRANI</h:head>
+
+	<h:form id="form">
+    	<p:panel>
+    		<h:panelGrid columns="2" columnClasses="column" cellpadding="5">
+				<h:outputText value="#{sessionObject.kisi.ad} #{sessionObject.kisi.soyad}"></h:outputText>
+				<h:outputText value="Yönetim Ekranı"></h:outputText>
+			</h:panelGrid>
+			
+   		</p:panel>
+
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>

@@ -1,0 +1,97 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+	
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<f:loadBundle basename="com.sporsimdi.resources.salon" var="labels"/>
+
+	<h:head>SALON BİLGİLERİ</h:head>
+
+	<h:form id="form">	
+
+    	<p:panel id="pnlDonem" header="#{labels.donem}">
+			<p:commandButton value="Yeni #{labels.donem}"  action="#{donemService.yonlendir(null)}" >
+			</p:commandButton>
+
+			<p:dataTable var="donem" 
+						value="#{isletmeService.isletmeninDonemListesi}"
+						paginator="false" rows="10"
+						id="tblDonem" 
+			>
+				<p:column headerText="Düzenle">
+					<p:commandButton value="Güncelle"  action="#{donemService.yonlendir(donem.id)}" >
+					</p:commandButton>
+				</p:column>	
+				<p:column headerText="#{labels.donem}">
+					<h:outputText value="#{donem.adi}" />
+				</p:column>						
+				<p:column headerText="#{labels.donemTipi}">
+					<h:outputText value="#{donem.donemTipi.adi}" />
+				</p:column>			
+				<p:column headerText="Tesis">
+					<h:outputText value="#{donem.tesis.adi}">
+					</h:outputText>
+				</p:column>			
+
+				<p:column headerText="Aidat Tarifeleri">
+					<p:commandButton value="Tarifeleri Gör" action="#{tarifeService.doneminTarifeleri(donem)}" 
+							update=":form:pnlTarife">
+					</p:commandButton>
+				</p:column>	
+
+			</p:dataTable>
+		</p:panel>
+		
+    	<p:panel id="pnlTarife" header="#{tarifeService.donem.adi} 'e ait Aidat Tarifeleri">
+
+			<p:commandButton value="Yeni Tarife"  action="#{tarifeService.yonlendir(null)}" >
+			</p:commandButton>
+
+			<p:dataTable var="tarife" 
+						value="#{tarifeService.tarifeListesi}"
+						id="tblTarife"
+			>
+				<p:column headerText="Tarife">
+					<h:outputText value="#{tarife.adi}" />
+				</p:column>
+					
+				<p:column headerText="Taksit Tutarı">
+					<h:outputText value="#{tarife.taksitTutar}">
+         				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Taksit Sayısı">
+					<h:outputText value="#{tarife.taksitSayisi}" />
+				</p:column>
+
+				<p:column headerText="Toplam Tutar">
+					<h:outputText value="#{tarife.toplamTutar}">
+         				<f:convertNumber type="currency" currencySymbol="TL" locale="tr"/>
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Kredi Kartlı Mı?">
+					<p:selectBooleanButton value="#{tarife.krediKartlimi}" onLabel="EVET" offLabel="HAYIR" disabled="true"></p:selectBooleanButton>
+				</p:column>
+
+				<p:column headerText="Düzenle">
+					<p:commandButton value="Güncelle"  action="#{tarifeService.yonlendir(tarife.id)}" >
+					</p:commandButton>
+				</p:column>	
+			</p:dataTable>
+   		</p:panel>
+
+		
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>

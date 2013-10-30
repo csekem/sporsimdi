@@ -1,0 +1,29 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" contentType="text/html">
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{sessionObject.setSelectedIsletmeTipi('ANASAYFA')}" />
+
+	<h:head>ANASAYFA</h:head>
+
+	<h:form id="form">
+    	<p:panel>
+    		<h:panelGrid columns="2" columnClasses="column" cellpadding="5">
+				<h:outputText value="#{sessionObject.kisi.ad} #{sessionObject.kisi.soyad}"></h:outputText>
+				<h:outputText value="Hoşgeldiniz"></h:outputText>
+				<h:outputText value="SPOR ŞİMDİ"></h:outputText>
+				<h:outputText value="Şimdi Spor zamanı"></h:outputText>
+			</h:panelGrid>
+			
+   		</p:panel>
+
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>

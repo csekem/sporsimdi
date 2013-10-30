@@ -1,0 +1,40 @@
+<f:view xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:spor="http://java.sun.com/jsf/composite/composite"	
+	contentType="text/html">
+	
+
+<ui:composition template="/template/commonLayout.xhtml">
+	<ui:define name="content">
+
+	<f:event type="preRenderView" listener="#{organizasyonService.sayfaLoad}" />
+	<f:event type="preRenderView" listener="#{menuService.setSubMenuType('ORGANIZASYON')}" />
+
+	<h:head>
+		<style type="text/css">
+			.ui-widget-content .ui-datalist-content{
+				border: none;
+				background: transparent;
+				background-image: none;
+			}
+		</style>	
+	</h:head>
+
+	<p:messages showDetail="true" autoUpdate="true" closable="true"></p:messages>
+	
+	<h:form id="form">	
+		<h3>
+			<h:outputText value="#{sessionObject.selectedOrganizasyon.adi} için HOŞGELDİNİZ"/>
+			<br />
+			<h:outputText value="İşlem yapmak için menu butonlarını kullanın!"/>
+		</h3>
+ 
+
+	</h:form>
+
+  	</ui:define>
+</ui:composition>
+</f:view>
