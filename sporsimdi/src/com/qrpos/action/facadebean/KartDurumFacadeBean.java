@@ -19,7 +19,7 @@ public class KartDurumFacadeBean implements KartDurumFacade, Serializable {
 
 	@PersistenceContext(unitName = "sporsimdi")
 	EntityManager entityManager;
-	//deneme
+	//denemefrfrfr
 
 	public KartDurumFacadeBean() {
 	}
